@@ -8,8 +8,10 @@ nulla e il sito **non gestisce alcun pagamento**. L'unica fonte di guadagno è
 ## Caratteristiche
 
 - 📝 **Annunci gratuiti** — pubblicazione con foto (max 5), prezzo fisso / da concordare / regalo
-- 🔍 **Ricerca e filtri** — per testo, categoria, cantone e fascia di prezzo, con paginazione
-- 🗂️ **Pagine categoria dedicate** — URL puliti tipo `/annunci/elettronica`, ottimi per Google
+- 🗂️ **13 categorie e 64 sottocategorie** — struttura completa stile Ricardo/Tutti.ch
+- 🚗 **Scheda tecnica veicoli** — per Auto & Moto: marca, modello, anno, chilometraggio, alimentazione, cambio, potenza (CV)
+- 🔍 **Ricerca e filtri** — per testo, categoria, sottocategoria, cantone e fascia di prezzo, con paginazione
+- 🔗 **Pagine categoria/sottocategoria dedicate** — URL puliti tipo `/annunci/auto-moto/automobili`, ottimi per Google
 - 👤 **Account utenti** — registrazione/login con sessioni JWT in cookie httpOnly (password con bcrypt)
 - ✅ **Verifica e-mail** — chi non conferma l'indirizzo non può pubblicare né contattare (anti-spam); invio via SMTP o link nel log in sviluppo
 - 💬 **Messaggistica interna** — compratore e venditore si scrivono dentro il sito, con badge dei non letti; nessun recapito personale viene esposto
@@ -36,8 +38,10 @@ npm run dev
 Il sito è raggiungibile su http://localhost:3000.
 
 Utenti demo dopo il seed (già verificati, password `password123`):
-`demo@example.com` (6 annunci) e `anna@example.com`, con una conversazione
-di esempio tra i due.
+`demo@example.com`, `anna@example.com`, `marco@example.com` e `giulia@example.com`,
+proprietari in totale di **96 annunci realistici** distribuiti su tutte le
+categorie e sottocategorie (auto e moto con marca/modello/CV veri), più una
+conversazione di esempio tra demo e anna.
 
 Senza SMTP configurato, il link di verifica e-mail dei nuovi utenti viene
 stampato nel log del server (`npm run dev`): aprilo nel browser per completare
@@ -70,7 +74,8 @@ mostrati dei riquadri segnaposto: utile in sviluppo per verificare il layout.
 ```
 app/                  Pagine (App Router)
   page.tsx            Homepage: hero, categorie, ultimi annunci
-  annunci/            Lista con filtri + pagine categoria + dettaglio annuncio
+  annunci/            Lista con filtri; rotta [...slug] serve categoria,
+                      sottocategoria e dettaglio annuncio con un solo file
   pubblica/           Form di pubblicazione (richiede login + e-mail verificata)
   i-miei-annunci/     Gestione annunci propri (venduto/elimina)
   messaggi/           Messaggistica interna (lista conversazioni + thread)
