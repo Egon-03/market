@@ -1,10 +1,23 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { logoutAction } from "@/lib/actions";
 import SearchBar from "@/components/SearchBar";
 
 export default async function Header() {
   const user = await getCurrentUser();
+
+  const unread = user
+    ? await db.message.count({
+        where: {
+          read: false,
+          senderId: { not: user.id },
+          conversation: {
+            OR: [{ buyerId: user.id }, { listing: { userId: user.id } }],
+          },
+        },
+      })
+    : 0;
 
   return (
     <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">
@@ -23,6 +36,17 @@ export default async function Header() {
         <nav className="order-2 ml-auto flex items-center gap-3 sm:order-3">
           {user ? (
             <>
+              <Link
+                href="/messaggi"
+                className="relative text-sm font-medium text-gray-700 hover:text-emerald-700"
+              >
+                Messaggi
+                {unread > 0 && (
+                  <span className="absolute -right-3 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[10px] font-bold text-white">
+                    {unread}
+                  </span>
+                )}
+              </Link>
               <Link
                 href="/i-miei-annunci"
                 className="hidden text-sm font-medium text-gray-700 hover:text-emerald-700 sm:block"

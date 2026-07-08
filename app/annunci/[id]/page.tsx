@@ -8,12 +8,16 @@ import { getCantonName } from "@/lib/cantons";
 import { getCategory, getConditionLabel } from "@/lib/categories";
 import ListingCard from "@/components/ListingCard";
 import AdSlot from "@/components/AdSlot";
-import ContactSeller from "@/components/ContactSeller";
+import MessageForm from "@/components/MessageForm";
 import ImageGallery from "@/components/ImageGallery";
+import CategoryBrowse from "@/components/CategoryBrowse";
 
 export const dynamic = "force-dynamic";
 
+// La rotta serve sia le pagine categoria (/annunci/elettronica) sia il
+// dettaglio annuncio (/annunci/<id>): gli slug categoria sono riservati.
 type Params = Promise<{ id: string }>;
+type SearchParams = Promise<{ pagina?: string }>;
 
 export async function generateMetadata({
   params,
@@ -21,6 +25,16 @@ export async function generateMetadata({
   params: Params;
 }): Promise<Metadata> {
   const { id } = await params;
+
+  const categoryPage = getCategory(id);
+  if (categoryPage) {
+    return {
+      title: `${categoryPage.name} — annunci gratuiti`,
+      description: `Annunci gratuiti nella categoria ${categoryPage.name}: compra e vendi senza commissioni su Mercatino.ch.`,
+      alternates: { canonical: `/annunci/${categoryPage.slug}` },
+    };
+  }
+
   const listing = await db.listing.findUnique({ where: { id } });
   if (!listing) return { title: "Annuncio non trovato" };
   const images = parseImages(listing.images);
@@ -35,11 +49,24 @@ export async function generateMetadata({
   };
 }
 
-export default async function ListingDetailPage({ params }: { params: Params }) {
+export default async function ListingDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams: SearchParams;
+}) {
   const { id } = await params;
+
+  const categoryPage = getCategory(id);
+  if (categoryPage) {
+    const { pagina } = await searchParams;
+    const page = Math.max(1, Number(pagina) || 1);
+    return <CategoryBrowse category={categoryPage} page={page} />;
+  }
   const listing = await db.listing.findUnique({
     where: { id },
-    include: { user: { select: { id: true, name: true, email: true, phone: true, createdAt: true } } },
+    include: { user: { select: { id: true, name: true, createdAt: true } } },
   });
   if (!listing) notFound();
 
@@ -93,7 +120,7 @@ export default async function ListingDetailPage({ params }: { params: Params }) 
         {" › "}
         {category && (
           <>
-            <Link href={`/annunci?categoria=${category.slug}`} className="hover:text-emerald-700">
+            <Link href={`/annunci/${category.slug}`} className="hover:text-emerald-700">
               {category.name}
             </Link>
             {" › "}
@@ -169,12 +196,7 @@ export default async function ListingDetailPage({ params }: { params: Params }) 
                 Gestisci questo annuncio
               </Link>
             ) : (
-              <ContactSeller
-                email={listing.user.email}
-                phone={listing.user.phone}
-                loggedIn={Boolean(viewer)}
-                listingTitle={listing.title}
-              />
+              <MessageForm listingId={listing.id} loggedIn={Boolean(viewer)} />
             )}
           </div>
 

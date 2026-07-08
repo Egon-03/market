@@ -11,12 +11,24 @@ async function main() {
   const passwordHash = await bcrypt.hash("password123", 10);
   const user = await db.user.upsert({
     where: { email: "demo@example.com" },
-    update: {},
+    update: { emailVerified: new Date() },
     create: {
       email: "demo@example.com",
       name: "Utente Demo",
       passwordHash,
       phone: "+41 79 000 00 00",
+      emailVerified: new Date(),
+    },
+  });
+
+  const anna = await db.user.upsert({
+    where: { email: "anna@example.com" },
+    update: { emailVerified: new Date() },
+    create: {
+      email: "anna@example.com",
+      name: "Anna Bianchi",
+      passwordHash,
+      emailVerified: new Date(),
     },
   });
 
@@ -83,11 +95,37 @@ async function main() {
     },
   ];
 
+  let firstListingId: string | null = null;
   for (const data of listings) {
-    await db.listing.create({ data: { ...data, userId: user.id } });
+    const listing = await db.listing.create({ data: { ...data, userId: user.id } });
+    firstListingId ??= listing.id;
   }
 
-  console.log(`Seed completato: utente demo@example.com (password: password123) e ${listings.length} annunci.`);
+  // Conversazione di esempio: Anna contatta l'Utente Demo per il primo annuncio
+  if (firstListingId) {
+    const conversation = await db.conversation.create({
+      data: { listingId: firstListingId, buyerId: anna.id },
+    });
+    await db.message.createMany({
+      data: [
+        {
+          conversationId: conversation.id,
+          senderId: anna.id,
+          body: "Ciao! La bici è ancora disponibile? Potrei passare a vederla sabato mattina.",
+        },
+        {
+          conversationId: conversation.id,
+          senderId: user.id,
+          body: "Ciao Anna, sì è disponibile! Sabato mattina va benissimo, ti scrivo l'indirizzo.",
+          read: true,
+        },
+      ],
+    });
+  }
+
+  console.log(
+    `Seed completato: utenti demo@example.com e anna@example.com (password: password123), ${listings.length} annunci e una conversazione di esempio.`
+  );
 }
 
 main()

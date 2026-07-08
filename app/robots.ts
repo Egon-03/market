@@ -7,7 +7,14 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/i-miei-annunci", "/accedi", "/registrati", "/pubblica"],
+      disallow: [
+        "/i-miei-annunci",
+        "/accedi",
+        "/registrati",
+        "/pubblica",
+        "/messaggi",
+        "/verifica",
+      ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
   };

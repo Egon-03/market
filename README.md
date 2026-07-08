@@ -9,9 +9,11 @@ nulla e il sito **non gestisce alcun pagamento**. L'unica fonte di guadagno è
 
 - 📝 **Annunci gratuiti** — pubblicazione con foto (max 5), prezzo fisso / da concordare / regalo
 - 🔍 **Ricerca e filtri** — per testo, categoria, cantone e fascia di prezzo, con paginazione
+- 🗂️ **Pagine categoria dedicate** — URL puliti tipo `/annunci/elettronica`, ottimi per Google
 - 👤 **Account utenti** — registrazione/login con sessioni JWT in cookie httpOnly (password con bcrypt)
-- 💬 **Contatto diretto** — compratore e venditore si accordano via e-mail/telefono; i recapiti sono visibili solo agli utenti registrati (anti-spam)
-- 💰 **Monetizzazione AdSense** — slot pubblicitari in homepage, lista annunci, dettaglio e sidebar; in sviluppo mostrano un segnaposto
+- ✅ **Verifica e-mail** — chi non conferma l'indirizzo non può pubblicare né contattare (anti-spam); invio via SMTP o link nel log in sviluppo
+- 💬 **Messaggistica interna** — compratore e venditore si scrivono dentro il sito, con badge dei non letti; nessun recapito personale viene esposto
+- 💰 **Monetizzazione AdSense** — slot pubblicitari in homepage, lista annunci, pagine categoria, dettaglio e sidebar; in sviluppo mostrano un segnaposto
 - 🔎 **SEO** — rendering lato server, sitemap.xml dinamica, robots.txt, metadati Open Graph e dati strutturati schema.org/Product (fondamentale: più traffico organico = più ricavi pubblicitari)
 
 ## Stack tecnico
@@ -27,11 +29,19 @@ nulla e il sito **non gestisce alcun pagamento**. L'unica fonte di guadagno è
 npm install
 cp .env.example .env      # poi modifica AUTH_SECRET
 npm run db:push           # crea il database SQLite
-npm run db:seed           # (facoltativo) dati demo: demo@example.com / password123
+npm run db:seed           # (facoltativo) dati demo, vedi sotto
 npm run dev
 ```
 
 Il sito è raggiungibile su http://localhost:3000.
+
+Utenti demo dopo il seed (già verificati, password `password123`):
+`demo@example.com` (6 annunci) e `anna@example.com`, con una conversazione
+di esempio tra i due.
+
+Senza SMTP configurato, il link di verifica e-mail dei nuovi utenti viene
+stampato nel log del server (`npm run dev`): aprilo nel browser per completare
+la registrazione in locale.
 
 ## Attivare Google AdSense (la fonte di guadagno)
 
@@ -48,6 +58,8 @@ mostrati dei riquadri segnaposto: utile in sviluppo per verificare il layout.
 
 - Imposta `NEXT_PUBLIC_SITE_URL` con il dominio reale (usato da sitemap e SEO).
 - Genera un `AUTH_SECRET` robusto: `openssl rand -base64 32`.
+- Configura le variabili `SMTP_*` per l'invio reale delle e-mail di verifica
+  (qualsiasi provider SMTP: Brevo, Mailgun, Postmark…).
 - SQLite funziona su un singolo server (VPS); per hosting serverless (es. Vercel)
   migra a PostgreSQL cambiando `provider` in `prisma/schema.prisma` e `DATABASE_URL`.
 - Le immagini caricate finiscono in `public/uploads/`: su un VPS assicurati che la
@@ -58,14 +70,16 @@ mostrati dei riquadri segnaposto: utile in sviluppo per verificare il layout.
 ```
 app/                  Pagine (App Router)
   page.tsx            Homepage: hero, categorie, ultimi annunci
-  annunci/            Lista con filtri + dettaglio annuncio
-  pubblica/           Form di pubblicazione (richiede login)
+  annunci/            Lista con filtri + pagine categoria + dettaglio annuncio
+  pubblica/           Form di pubblicazione (richiede login + e-mail verificata)
   i-miei-annunci/     Gestione annunci propri (venduto/elimina)
+  messaggi/           Messaggistica interna (lista conversazioni + thread)
   accedi/ registrati/ Autenticazione
+  verifica/           Conferma dell'indirizzo e-mail
   come-funziona/      Pagina informativa
   sitemap.ts robots.ts SEO
 components/           Header, Footer, AdSlot, ListingCard, form…
-lib/                  db, auth, server actions, categorie, cantoni, formattazione
+lib/                  db, auth, email, server actions, categorie, cantoni
 prisma/               Schema database e seed demo
 public/ads.txt        Dichiarazione publisher AdSense
 ```
