@@ -18,16 +18,16 @@ export default function ListingForm() {
     setPreviews(files.map((f) => URL.createObjectURL(f)));
   }
 
-  const inputClass =
-    "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none";
-
   return (
-    <form action={formAction} className="space-y-6">
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 font-semibold">Cosa vendi?</h2>
-        <div className="space-y-4">
+    <form action={formAction} className="animate-fade-up space-y-5">
+      <div className="card p-6 sm:p-7">
+        <h2 className="mb-5 flex items-center gap-2 font-extrabold text-stone-900">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-sm font-extrabold text-emerald-700">1</span>
+          Cosa vendi?
+        </h2>
+        <div className="space-y-5">
           <div>
-            <label htmlFor="title" className="mb-1 block text-sm font-medium">
+            <label htmlFor="title" className="label">
               Titolo dell&apos;annuncio
             </label>
             <input
@@ -38,11 +38,11 @@ export default function ListingForm() {
               minLength={5}
               maxLength={100}
               placeholder="Es. Bicicletta da corsa in ottimo stato"
-              className={inputClass}
+              className="input"
             />
           </div>
           <div>
-            <label htmlFor="description" className="mb-1 block text-sm font-medium">
+            <label htmlFor="description" className="label">
               Descrizione
             </label>
             <textarea
@@ -52,15 +52,15 @@ export default function ListingForm() {
               minLength={20}
               rows={6}
               placeholder="Descrivi l'articolo: caratteristiche, stato, motivo della vendita…"
-              className={inputClass}
+              className="input resize-y"
             />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label htmlFor="category" className="mb-1 block text-sm font-medium">
+              <label htmlFor="category" className="label">
                 Categoria
               </label>
-              <select id="category" name="category" required className={inputClass}>
+              <select id="category" name="category" required className="input">
                 <option value="">Seleziona…</option>
                 {CATEGORIES.map((c) => (
                   <option key={c.slug} value={c.slug}>
@@ -70,10 +70,10 @@ export default function ListingForm() {
               </select>
             </div>
             <div>
-              <label htmlFor="condition" className="mb-1 block text-sm font-medium">
+              <label htmlFor="condition" className="label">
                 Condizione
               </label>
-              <select id="condition" name="condition" defaultValue="usato" className={inputClass}>
+              <select id="condition" name="condition" defaultValue="usato" className="input">
                 {CONDITIONS.map((c) => (
                   <option key={c.value} value={c.value}>
                     {c.label}
@@ -85,9 +85,12 @@ export default function ListingForm() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 font-semibold">Prezzo</h2>
-        <div className="flex flex-wrap gap-4">
+      <div className="card p-6 sm:p-7">
+        <h2 className="mb-5 flex items-center gap-2 font-extrabold text-stone-900">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-sm font-extrabold text-emerald-700">2</span>
+          Prezzo
+        </h2>
+        <div className="flex flex-wrap gap-2.5">
           {(
             [
               { value: "fixed", label: "Prezzo fisso" },
@@ -95,22 +98,29 @@ export default function ListingForm() {
               { value: "free", label: "Da regalare" },
             ] as const
           ).map((opt) => (
-            <label key={opt.value} className="flex items-center gap-2 text-sm">
+            <label
+              key={opt.value}
+              className={`cursor-pointer rounded-xl border-2 px-4 py-2.5 text-sm font-bold transition ${
+                priceMode === opt.value
+                  ? "border-emerald-500 bg-emerald-50 text-emerald-800"
+                  : "border-stone-200 bg-white text-stone-500 hover:border-stone-300"
+              }`}
+            >
               <input
                 type="radio"
                 name="priceMode"
                 value={opt.value}
                 checked={priceMode === opt.value}
                 onChange={() => setPriceMode(opt.value)}
-                className="accent-emerald-600"
+                className="sr-only"
               />
               {opt.label}
             </label>
           ))}
         </div>
         {priceMode === "fixed" && (
-          <div className="mt-4 max-w-48">
-            <label htmlFor="price" className="mb-1 block text-sm font-medium">
+          <div className="mt-5 max-w-52">
+            <label htmlFor="price" className="label">
               Prezzo (CHF)
             </label>
             <input
@@ -121,20 +131,23 @@ export default function ListingForm() {
               step="0.05"
               required
               placeholder="0.00"
-              className={inputClass}
+              className="input"
             />
           </div>
         )}
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 font-semibold">Dove si trova?</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+      <div className="card p-6 sm:p-7">
+        <h2 className="mb-5 flex items-center gap-2 font-extrabold text-stone-900">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-sm font-extrabold text-emerald-700">3</span>
+          Dove si trova?
+        </h2>
+        <div className="grid gap-5 sm:grid-cols-2">
           <div>
-            <label htmlFor="canton" className="mb-1 block text-sm font-medium">
+            <label htmlFor="canton" className="label">
               Cantone
             </label>
-            <select id="canton" name="canton" required className={inputClass}>
+            <select id="canton" name="canton" required className="input">
               <option value="">Seleziona…</option>
               {CANTONS.map((c) => (
                 <option key={c.code} value={c.code}>
@@ -144,37 +157,47 @@ export default function ListingForm() {
             </select>
           </div>
           <div>
-            <label htmlFor="city" className="mb-1 block text-sm font-medium">
-              Città <span className="font-normal text-gray-400">(facoltativo)</span>
+            <label htmlFor="city" className="label">
+              Città <span className="font-normal text-stone-400">(facoltativo)</span>
             </label>
-            <input id="city" name="city" type="text" placeholder="Es. Lugano" className={inputClass} />
+            <input id="city" name="city" type="text" placeholder="Es. Lugano" className="input" />
           </div>
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="mb-1 font-semibold">Foto</h2>
-        <p className="mb-4 text-sm text-gray-500">
+      <div className="card p-6 sm:p-7">
+        <h2 className="mb-1 flex items-center gap-2 font-extrabold text-stone-900">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-sm font-extrabold text-emerald-700">4</span>
+          Foto
+        </h2>
+        <p className="mb-5 text-sm text-stone-500">
           Fino a 5 foto (JPG, PNG o WebP, max 5 MB ciascuna). Gli annunci con foto
           ricevono molti più contatti!
         </p>
-        <input
-          type="file"
-          name="images"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          onChange={onFilesChange}
-          className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-emerald-700 hover:file:bg-emerald-100"
-        />
+        <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-stone-300 bg-stone-50/60 px-6 py-10 text-center transition hover:border-emerald-400 hover:bg-emerald-50/40">
+          <span className="text-3xl">📸</span>
+          <span className="text-sm font-bold text-stone-700">
+            Clicca per scegliere le foto
+          </span>
+          <span className="text-xs text-stone-400">o trascinale qui</span>
+          <input
+            type="file"
+            name="images"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            onChange={onFilesChange}
+            className="sr-only"
+          />
+        </label>
         {previews.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2.5">
             {previews.map((src) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={src}
                 src={src}
                 alt="Anteprima"
-                className="h-20 w-24 rounded-lg border border-gray-200 object-cover"
+                className="h-20 w-24 rounded-xl border border-stone-200 object-cover shadow-sm"
               />
             ))}
           </div>
@@ -182,14 +205,12 @@ export default function ListingForm() {
       </div>
 
       {state?.error && (
-        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{state.error}</p>
+        <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {state.error}
+        </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-lg bg-emerald-600 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50 sm:w-auto sm:px-10"
-      >
+      <button type="submit" disabled={pending} className="btn-primary w-full !py-3.5 text-base sm:w-auto sm:px-12">
         {pending ? "Pubblicazione in corso…" : "Pubblica annuncio gratis"}
       </button>
     </form>

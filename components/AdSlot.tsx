@@ -36,10 +36,13 @@ export default function AdSlot({ slot, format = "auto", className = "" }: Props)
   if (!ADSENSE_CLIENT) {
     return (
       <div
-        className={`flex min-h-24 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 text-xs text-gray-400 ${className}`}
+        className={`flex min-h-24 flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-stone-300 bg-stone-100/60 text-stone-400 ${className}`}
         aria-hidden="true"
       >
-        Spazio pubblicitario (AdSense slot {slot})
+        <span className="rounded-full border border-stone-300 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest">
+          Annuncio
+        </span>
+        <span className="text-xs">Spazio pubblicitario (AdSense slot {slot})</span>
       </div>
     );
   }

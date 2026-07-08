@@ -34,41 +34,43 @@ export default async function VerifyPage({
   }
 
   return (
-    <div className="mx-auto max-w-md py-16 text-center">
-      {outcome === "ok" ? (
-        <>
-          <p className="text-6xl">✅</p>
-          <h1 className="mt-4 text-2xl font-bold">E-mail confermata!</h1>
-          <p className="mt-2 text-gray-500">
-            Il tuo account è attivo: ora puoi pubblicare annunci e contattare i
-            venditori.
-          </p>
-          <Link
-            href="/pubblica"
-            className="mt-6 inline-block rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
-          >
-            Pubblica il tuo primo annuncio
-          </Link>
-        </>
-      ) : (
-        <>
-          <p className="text-6xl">⚠️</p>
-          <h1 className="mt-4 text-2xl font-bold">
-            {outcome === "expired" ? "Link scaduto" : "Link non valido"}
-          </h1>
-          <p className="mt-2 text-gray-500">
-            {outcome === "expired"
-              ? "Il link di verifica è valido 24 ore. Accedi e richiedi un nuovo invio dal banner in alto."
-              : "Il link di verifica non è valido o è già stato utilizzato."}
-          </p>
-          <Link
-            href="/"
-            className="mt-6 inline-block rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
-          >
-            Torna alla home
-          </Link>
-        </>
-      )}
+    <div className="mx-auto max-w-md animate-fade-up py-10">
+      <div className="card p-10 text-center">
+        {outcome === "ok" ? (
+          <>
+            <span className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-b from-emerald-50 to-emerald-100 text-5xl shadow-inner">
+              ✅
+            </span>
+            <h1 className="mt-5 text-2xl font-extrabold tracking-tight text-stone-900">
+              E-mail confermata!
+            </h1>
+            <p className="mt-2 leading-relaxed text-stone-500">
+              Il tuo account è attivo: ora puoi pubblicare annunci e contattare i
+              venditori.
+            </p>
+            <Link href="/pubblica" className="btn-primary mt-7">
+              Pubblica il tuo primo annuncio
+            </Link>
+          </>
+        ) : (
+          <>
+            <span className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-b from-amber-50 to-amber-100 text-5xl shadow-inner">
+              ⚠️
+            </span>
+            <h1 className="mt-5 text-2xl font-extrabold tracking-tight text-stone-900">
+              {outcome === "expired" ? "Link scaduto" : "Link non valido"}
+            </h1>
+            <p className="mt-2 leading-relaxed text-stone-500">
+              {outcome === "expired"
+                ? "Il link di verifica è valido 24 ore. Accedi e richiedi un nuovo invio dal banner in alto."
+                : "Il link di verifica non è valido o è già stato utilizzato."}
+            </p>
+            <Link href="/" className="btn-primary mt-7">
+              Torna alla home
+            </Link>
+          </>
+        )}
+      </div>
     </div>
   );
 }

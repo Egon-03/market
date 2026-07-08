@@ -32,18 +32,20 @@ export default async function MessagesPage() {
   });
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <h1 className="mb-6 text-2xl font-bold">Messaggi</h1>
+    <div className="mx-auto max-w-3xl animate-fade-up">
+      <h1 className="mb-6 text-2xl font-extrabold tracking-tight text-stone-900">
+        Messaggi
+      </h1>
 
       {conversations.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center">
-          <p className="text-4xl">💬</p>
-          <p className="mt-2 font-medium">Nessuna conversazione</p>
-          <p className="mt-1 text-sm text-gray-500">
+        <div className="card border-dashed p-12 text-center">
+          <p className="text-5xl">💬</p>
+          <p className="mt-3 font-bold text-stone-700">Nessuna conversazione</p>
+          <p className="mt-1 text-sm text-stone-500">
             Quando contatti un venditore (o qualcuno risponde a un tuo annuncio),
             la conversazione apparirà qui.
           </p>
-          <Link href="/annunci" className="mt-3 inline-block text-sm text-emerald-700 hover:underline">
+          <Link href="/annunci" className="mt-3 inline-block text-sm font-bold text-emerald-700 hover:underline">
             Sfoglia gli annunci →
           </Link>
         </div>
@@ -60,35 +62,35 @@ export default async function MessagesPage() {
               <li key={conv.id}>
                 <Link
                   href={`/messaggi/${conv.id}`}
-                  className={`flex items-center gap-4 rounded-xl border bg-white p-4 transition hover:shadow-sm ${
-                    unread > 0 ? "border-emerald-300" : "border-gray-200"
+                  className={`card flex items-center gap-4 p-4 transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                    unread > 0 ? "!border-emerald-300 ring-1 ring-emerald-200" : ""
                   }`}
                 >
-                  <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                  <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-xl bg-stone-100">
                     {cover ? (
                       <Image src={cover} alt="" fill sizes="64px" className="object-cover" />
                     ) : (
-                      <div className="flex h-full items-center justify-center text-2xl">{icon}</div>
+                      <div className="flex h-full items-center justify-center text-2xl opacity-70">{icon}</div>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-2 text-sm">
-                      <span className="font-semibold">{otherName}</span>
-                      <span className="text-gray-400">·</span>
-                      <span className="truncate text-gray-500">{conv.listing.title}</span>
+                      <span className="font-extrabold text-stone-900">{otherName}</span>
+                      <span className="text-stone-300">·</span>
+                      <span className="truncate text-stone-500">{conv.listing.title}</span>
                     </p>
                     {lastMessage && (
-                      <p className={`mt-0.5 truncate text-sm ${unread > 0 ? "font-medium text-gray-900" : "text-gray-500"}`}>
+                      <p className={`mt-1 truncate text-sm ${unread > 0 ? "font-semibold text-stone-800" : "text-stone-400"}`}>
                         {lastMessage.body}
                       </p>
                     )}
                   </div>
-                  <div className="flex shrink-0 flex-col items-end gap-1">
+                  <div className="flex shrink-0 flex-col items-end gap-1.5">
                     {lastMessage && (
-                      <span className="text-xs text-gray-400">{timeAgo(lastMessage.createdAt)}</span>
+                      <span className="text-xs text-stone-400">{timeAgo(lastMessage.createdAt)}</span>
                     )}
                     {unread > 0 && (
-                      <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-bold text-white">
+                      <span className="rounded-full bg-gradient-to-b from-emerald-500 to-emerald-600 px-2.5 py-0.5 text-xs font-extrabold text-white shadow">
                         {unread}
                       </span>
                     )}

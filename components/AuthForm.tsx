@@ -12,61 +12,46 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
   );
 
   return (
-    <div className="mx-auto max-w-md">
-      <div className="rounded-xl border border-gray-200 bg-white p-8">
-        <h1 className="text-2xl font-bold">
-          {mode === "login" ? "Accedi" : "Crea il tuo account gratuito"}
+    <div className="mx-auto max-w-md animate-fade-up py-6">
+      <div className="card relative overflow-hidden p-8">
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600"
+          aria-hidden="true"
+        />
+        <h1 className="text-2xl font-extrabold tracking-tight text-stone-900">
+          {mode === "login" ? "Bentornato 👋" : "Crea il tuo account gratuito"}
         </h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1.5 text-sm text-stone-500">
           {mode === "login"
-            ? "Bentornato! Accedi per gestire i tuoi annunci."
+            ? "Accedi per gestire i tuoi annunci e i tuoi messaggi."
             : "Registrarsi è gratis e richiede meno di un minuto."}
         </p>
 
-        <form action={formAction} className="mt-6 space-y-4">
+        <form action={formAction} className="mt-7 space-y-5">
           {mode === "register" && (
             <>
               <div>
-                <label htmlFor="name" className="mb-1 block text-sm font-medium">
+                <label htmlFor="name" className="label">
                   Nome
                 </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  minLength={2}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-                />
+                <input id="name" name="name" type="text" required minLength={2} className="input" />
               </div>
               <div>
-                <label htmlFor="phone" className="mb-1 block text-sm font-medium">
-                  Telefono <span className="font-normal text-gray-400">(facoltativo)</span>
+                <label htmlFor="phone" className="label">
+                  Telefono <span className="font-normal text-stone-400">(facoltativo)</span>
                 </label>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-                />
+                <input id="phone" name="phone" type="tel" className="input" />
               </div>
             </>
           )}
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium">
+            <label htmlFor="email" className="label">
               E-mail
             </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-            />
+            <input id="email" name="email" type="email" required autoComplete="email" className="input" />
           </div>
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium">
+            <label htmlFor="password" className="label">
               Password
             </label>
             <input
@@ -76,21 +61,17 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
               required
               minLength={mode === "register" ? 8 : undefined}
               autoComplete={mode === "login" ? "current-password" : "new-password"}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+              className="input"
             />
           </div>
 
           {state?.error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
               {state.error}
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={pending}
-            className="w-full rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-          >
+          <button type="submit" disabled={pending} className="btn-primary w-full !py-3">
             {pending
               ? "Attendere…"
               : mode === "login"
@@ -99,18 +80,18 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-7 text-center text-sm text-stone-500">
           {mode === "login" ? (
             <>
               Non hai un account?{" "}
-              <Link href="/registrati" className="font-medium text-emerald-700 hover:underline">
+              <Link href="/registrati" className="font-bold text-emerald-700 hover:underline">
                 Registrati gratis
               </Link>
             </>
           ) : (
             <>
               Hai già un account?{" "}
-              <Link href="/accedi" className="font-medium text-emerald-700 hover:underline">
+              <Link href="/accedi" className="font-bold text-emerald-700 hover:underline">
                 Accedi
               </Link>
             </>

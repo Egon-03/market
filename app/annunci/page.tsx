@@ -94,22 +94,18 @@ export default async function ListingsPage({
     <div className="flex flex-col gap-6 lg:flex-row">
       {/* Filtri */}
       <aside className="w-full shrink-0 lg:w-64">
-        <form
-          action="/annunci"
-          method="get"
-          className="space-y-4 rounded-xl border border-gray-200 bg-white p-4"
-        >
-          <h2 className="font-semibold">Filtri</h2>
+        <form action="/annunci" method="get" className="card space-y-5 p-5">
+          <h2 className="font-extrabold text-stone-900">Filtri</h2>
           {q && <input type="hidden" name="q" value={q} />}
           <div>
-            <label htmlFor="categoria" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="categoria" className="label">
               Categoria
             </label>
             <select
               id="categoria"
               name="categoria"
               defaultValue={categoria}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="input"
             >
               <option value="">Tutte le categorie</option>
               {CATEGORIES.map((c) => (
@@ -120,14 +116,14 @@ export default async function ListingsPage({
             </select>
           </div>
           <div>
-            <label htmlFor="cantone" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="cantone" className="label">
               Cantone
             </label>
             <select
               id="cantone"
               name="cantone"
               defaultValue={cantone}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="input"
             >
               <option value="">Tutta la Svizzera</option>
               {CANTONS.map((c) => (
@@ -138,7 +134,7 @@ export default async function ListingsPage({
             </select>
           </div>
           <div>
-            <span className="mb-1 block text-sm font-medium text-gray-700">Prezzo (CHF)</span>
+            <span className="label">Prezzo (CHF)</span>
             <div className="flex gap-2">
               <input
                 type="number"
@@ -146,7 +142,7 @@ export default async function ListingsPage({
                 min={0}
                 placeholder="Min"
                 defaultValue={params.prezzoMin ?? ""}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="input"
                 aria-label="Prezzo minimo"
               />
               <input
@@ -155,18 +151,18 @@ export default async function ListingsPage({
                 min={0}
                 placeholder="Max"
                 defaultValue={params.prezzoMax ?? ""}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="input"
                 aria-label="Prezzo massimo"
               />
             </div>
           </div>
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-emerald-600 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-          >
+          <button type="submit" className="btn-primary w-full">
             Applica filtri
           </button>
-          <Link href="/annunci" className="block text-center text-xs text-gray-500 hover:underline">
+          <Link
+            href="/annunci"
+            className="block text-center text-xs font-semibold text-stone-400 transition hover:text-stone-600"
+          >
             Azzera filtri
           </Link>
         </form>
@@ -177,23 +173,27 @@ export default async function ListingsPage({
 
       {/* Risultati */}
       <div className="min-w-0 flex-1">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold">
-            {activeCategory ? activeCategory.name : q ? `Risultati per “${q}”` : "Tutti gli annunci"}
+        <div className="mb-5">
+          <h1 className="text-2xl font-extrabold tracking-tight text-stone-900">
+            {activeCategory
+              ? `${activeCategory.icon} ${activeCategory.name}`
+              : q
+                ? `Risultati per “${q}”`
+                : "Tutti gli annunci"}
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="mt-1 text-sm text-stone-500">
             {total} {total === 1 ? "annuncio trovato" : "annunci trovati"}
             {cantone ? ` in ${getCantonName(cantone)}` : ""}
           </p>
         </div>
 
         {listings.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center">
-            <p className="text-4xl">🔎</p>
-            <p className="mt-2 font-medium text-gray-700">Nessun annuncio trovato</p>
-            <p className="mt-1 text-sm text-gray-500">
+          <div className="card border-dashed p-12 text-center">
+            <p className="text-5xl">🔎</p>
+            <p className="mt-3 font-bold text-stone-700">Nessun annuncio trovato</p>
+            <p className="mt-1 text-sm text-stone-500">
               Prova a modificare i filtri o{" "}
-              <Link href="/pubblica" className="text-emerald-700 hover:underline">
+              <Link href="/pubblica" className="font-bold text-emerald-700 hover:underline">
                 pubblica tu il primo annuncio
               </Link>
               .
@@ -215,23 +215,17 @@ export default async function ListingsPage({
 
         {/* Paginazione */}
         {totalPages > 1 && (
-          <nav className="mt-8 flex items-center justify-center gap-2" aria-label="Paginazione">
+          <nav className="mt-10 flex items-center justify-center gap-3" aria-label="Paginazione">
             {page > 1 && (
-              <Link
-                href={pageUrl(page - 1)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm hover:border-emerald-500"
-              >
+              <Link href={pageUrl(page - 1)} className="btn-secondary">
                 ← Precedente
               </Link>
             )}
-            <span className="px-3 text-sm text-gray-500">
+            <span className="px-2 text-sm font-semibold text-stone-500">
               Pagina {page} di {totalPages}
             </span>
             {page < totalPages && (
-              <Link
-                href={pageUrl(page + 1)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm hover:border-emerald-500"
-              >
+              <Link href={pageUrl(page + 1)} className="btn-secondary">
                 Successiva →
               </Link>
             )}

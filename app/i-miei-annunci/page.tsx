@@ -21,22 +21,21 @@ export default async function MyListingsPage() {
   });
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-4xl animate-fade-up">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">I miei annunci</h1>
-        <Link
-          href="/pubblica"
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-        >
+        <h1 className="text-2xl font-extrabold tracking-tight text-stone-900">
+          I miei annunci
+        </h1>
+        <Link href="/pubblica" className="btn-primary">
           + Nuovo annuncio
         </Link>
       </div>
 
       {listings.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center">
-          <p className="text-4xl">📭</p>
-          <p className="mt-2 font-medium">Non hai ancora pubblicato annunci</p>
-          <Link href="/pubblica" className="mt-2 inline-block text-sm text-emerald-700 hover:underline">
+        <div className="card border-dashed p-12 text-center">
+          <p className="text-5xl">📭</p>
+          <p className="mt-3 font-bold text-stone-700">Non hai ancora pubblicato annunci</p>
+          <Link href="/pubblica" className="mt-2 inline-block text-sm font-bold text-emerald-700 hover:underline">
             Pubblica il tuo primo annuncio gratis →
           </Link>
         </div>
@@ -49,13 +48,13 @@ export default async function MyListingsPage() {
             return (
               <li
                 key={listing.id}
-                className="flex flex-wrap items-center gap-4 rounded-xl border border-gray-200 bg-white p-4"
+                className="card flex flex-wrap items-center gap-4 p-4 transition hover:shadow-md"
               >
-                <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-stone-100">
                   {cover ? (
                     <Image src={cover} alt="" fill sizes="80px" className="object-cover" />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-2xl">
+                    <div className="flex h-full items-center justify-center text-2xl opacity-70">
                       {category?.icon ?? "📦"}
                     </div>
                   )}
@@ -63,15 +62,17 @@ export default async function MyListingsPage() {
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/annunci/${listing.id}`}
-                    className="block truncate font-medium hover:text-emerald-700"
+                    className="block truncate font-bold text-stone-800 transition hover:text-emerald-700"
                   >
                     {listing.title}
                   </Link>
-                  <p className="text-sm text-gray-500">
-                    {formatPrice(listing.price)} · {listing.views} visite ·{" "}
-                    {timeAgo(listing.createdAt)}
+                  <p className="mt-0.5 text-sm text-stone-400">
+                    <span className="font-extrabold text-emerald-700">
+                      {formatPrice(listing.price)}
+                    </span>{" "}
+                    · {listing.views} visite · {timeAgo(listing.createdAt)}
                     {sold && (
-                      <span className="ml-2 rounded-full bg-gray-200 px-2 py-0.5 text-xs font-semibold text-gray-700">
+                      <span className="ml-2 rounded-full bg-stone-200 px-2.5 py-0.5 text-xs font-bold text-stone-600">
                         Venduto
                       </span>
                     )}
@@ -81,20 +82,14 @@ export default async function MyListingsPage() {
                   {!sold && (
                     <form action={markSoldAction}>
                       <input type="hidden" name="id" value={listing.id} />
-                      <button
-                        type="submit"
-                        className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-emerald-500"
-                      >
+                      <button type="submit" className="btn-secondary !px-4 !py-2 !text-xs">
                         Segna come venduto
                       </button>
                     </form>
                   )}
                   <form action={deleteListingAction}>
                     <input type="hidden" name="id" value={listing.id} />
-                    <button
-                      type="submit"
-                      className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
-                    >
+                    <button type="submit" className="btn-danger !px-4 !py-2 !text-xs">
                       Elimina
                     </button>
                   </form>

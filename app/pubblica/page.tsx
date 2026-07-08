@@ -11,8 +11,10 @@ export default async function PublishPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="text-2xl font-bold">Pubblica un annuncio</h1>
-      <p className="mt-1 mb-6 text-sm text-gray-500">
+      <h1 className="text-3xl font-extrabold tracking-tight text-stone-900">
+        Pubblica un annuncio
+      </h1>
+      <p className="mt-1.5 mb-7 text-sm text-stone-500">
         Pubblicare è gratuito al 100%, senza commissioni sulla vendita.
       </p>
       <ListingForm />

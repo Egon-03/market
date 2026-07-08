@@ -11,6 +11,7 @@ import AdSlot from "@/components/AdSlot";
 import MessageForm from "@/components/MessageForm";
 import ImageGallery from "@/components/ImageGallery";
 import CategoryBrowse from "@/components/CategoryBrowse";
+import { ClockIcon, EyeIcon, ShieldIcon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -113,20 +114,20 @@ export default async function ListingDetailPage({
       />
 
       {/* Breadcrumb */}
-      <nav className="text-sm text-gray-500" aria-label="Breadcrumb">
-        <Link href="/" className="hover:text-emerald-700">Home</Link>
-        {" › "}
-        <Link href="/annunci" className="hover:text-emerald-700">Annunci</Link>
-        {" › "}
+      <nav className="flex flex-wrap items-center gap-1.5 text-sm text-stone-400" aria-label="Breadcrumb">
+        <Link href="/" className="font-medium transition hover:text-emerald-700">Home</Link>
+        <span>›</span>
+        <Link href="/annunci" className="font-medium transition hover:text-emerald-700">Annunci</Link>
         {category && (
           <>
-            <Link href={`/annunci/${category.slug}`} className="hover:text-emerald-700">
+            <span>›</span>
+            <Link href={`/annunci/${category.slug}`} className="font-medium transition hover:text-emerald-700">
               {category.name}
             </Link>
-            {" › "}
           </>
         )}
-        <span className="text-gray-700">{listing.title}</span>
+        <span>›</span>
+        <span className="truncate font-medium text-stone-600">{listing.title}</span>
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-3">
@@ -134,45 +135,51 @@ export default async function ListingDetailPage({
         <div className="space-y-6 lg:col-span-2">
           <ImageGallery images={images} title={listing.title} fallbackIcon={category?.icon ?? "📦"} />
 
-          <div className="rounded-xl border border-gray-200 bg-white p-6">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h1 className="text-2xl font-bold">{listing.title}</h1>
-                <p className="mt-1 text-sm text-gray-500">
-                  Pubblicato il {formatDate(listing.createdAt)} · {listing.views} visualizzazioni
+          <div className="card p-6 sm:p-8">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0">
+                <h1 className="text-2xl font-extrabold tracking-tight text-stone-900 sm:text-3xl">
+                  {listing.title}
+                </h1>
+                <p className="mt-2 flex items-center gap-1.5 text-sm text-stone-400">
+                  <ClockIcon className="h-4 w-4" />
+                  Pubblicato il {formatDate(listing.createdAt)}
+                  <span className="mx-1">·</span>
+                  <EyeIcon className="h-4 w-4" />
+                  {listing.views} visualizzazioni
                 </p>
               </div>
-              <p className="text-2xl font-extrabold text-emerald-700">
+              <p className="rounded-2xl bg-gradient-to-b from-emerald-50 to-emerald-100/60 px-5 py-3 text-2xl font-extrabold tracking-tight text-emerald-700 shadow-inner">
                 {formatPrice(listing.price)}
               </p>
             </div>
 
             {sold && (
-              <p className="mt-4 rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700">
+              <p className="mt-5 rounded-xl bg-stone-100 px-4 py-3 text-sm font-semibold text-stone-600">
                 ⚠️ Questo articolo è stato venduto.
               </p>
             )}
 
-            <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-gray-100 pt-4 text-sm sm:grid-cols-3">
-              <div>
-                <dt className="text-gray-500">Categoria</dt>
-                <dd className="font-medium">{category?.name ?? listing.category}</dd>
-              </div>
-              <div>
-                <dt className="text-gray-500">Condizione</dt>
-                <dd className="font-medium">{getConditionLabel(listing.condition)}</dd>
-              </div>
-              <div>
-                <dt className="text-gray-500">Luogo</dt>
-                <dd className="font-medium">
-                  {getCantonName(listing.canton)}
-                  {listing.city ? ` · ${listing.city}` : ""}
-                </dd>
-              </div>
+            <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {[
+                { label: "Categoria", value: `${category?.icon ?? ""} ${category?.name ?? listing.category}` },
+                { label: "Condizione", value: getConditionLabel(listing.condition) },
+                {
+                  label: "Luogo",
+                  value: `${getCantonName(listing.canton)}${listing.city ? ` · ${listing.city}` : ""}`,
+                },
+              ].map((row) => (
+                <div key={row.label} className="rounded-xl bg-stone-50 px-4 py-3">
+                  <dt className="text-xs font-bold uppercase tracking-wider text-stone-400">
+                    {row.label}
+                  </dt>
+                  <dd className="mt-0.5 text-sm font-semibold text-stone-800">{row.value}</dd>
+                </div>
+              ))}
             </dl>
 
-            <h2 className="mt-6 font-semibold">Descrizione</h2>
-            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-gray-700">
+            <h2 className="mt-8 text-lg font-extrabold text-stone-900">Descrizione</h2>
+            <p className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-stone-600">
               {listing.description}
             </p>
           </div>
@@ -181,18 +188,24 @@ export default async function ListingDetailPage({
         </div>
 
         {/* Sidebar venditore */}
-        <div className="space-y-4">
-          <div className="rounded-xl border border-gray-200 bg-white p-6">
-            <h2 className="font-semibold">Venditore</h2>
-            <p className="mt-2 text-lg font-medium">{listing.user.name}</p>
-            <p className="text-sm text-gray-500">
-              Membro da {formatDate(listing.user.createdAt)}
-            </p>
+        <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+          <div className="card p-6">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-stone-400">
+              Venditore
+            </h2>
+            <div className="mt-3 flex items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 text-lg font-extrabold text-white shadow-md">
+                {listing.user.name.charAt(0).toUpperCase()}
+              </span>
+              <div>
+                <p className="font-extrabold text-stone-900">{listing.user.name}</p>
+                <p className="text-xs text-stone-400">
+                  Membro da {formatDate(listing.user.createdAt)}
+                </p>
+              </div>
+            </div>
             {isOwner ? (
-              <Link
-                href="/i-miei-annunci"
-                className="mt-4 block rounded-lg border border-emerald-600 py-2 text-center text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
-              >
+              <Link href="/i-miei-annunci" className="btn-secondary mt-5 w-full">
                 Gestisci questo annuncio
               </Link>
             ) : (
@@ -200,12 +213,15 @@ export default async function ListingDetailPage({
             )}
           </div>
 
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800">
-            <p className="font-semibold">💡 Consigli di sicurezza</p>
-            <ul className="mt-1 list-inside list-disc space-y-0.5">
-              <li>Incontra il venditore di persona in un luogo pubblico</li>
-              <li>Controlla l&apos;articolo prima di pagare</li>
-              <li>Non inviare mai denaro in anticipo</li>
+          <div className="rounded-2xl border border-amber-200/70 bg-gradient-to-b from-amber-50 to-orange-50/50 p-5 text-amber-900">
+            <p className="flex items-center gap-2 text-sm font-extrabold">
+              <ShieldIcon className="h-5 w-5 text-amber-600" />
+              Consigli di sicurezza
+            </p>
+            <ul className="mt-2.5 space-y-1.5 text-xs leading-relaxed text-amber-800">
+              <li>· Incontra il venditore di persona in un luogo pubblico</li>
+              <li>· Controlla l&apos;articolo prima di pagare</li>
+              <li>· Non inviare mai denaro in anticipo</li>
             </ul>
           </div>
 
@@ -216,7 +232,9 @@ export default async function ListingDetailPage({
       {/* Annunci simili */}
       {similar.length > 0 && (
         <section>
-          <h2 className="mb-4 text-xl font-bold">Annunci simili</h2>
+          <h2 className="mb-5 text-2xl font-extrabold tracking-tight text-stone-900">
+            Annunci simili
+          </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {similar.map((l) => (
               <ListingCard key={l.id} listing={l} />

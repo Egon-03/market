@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import VerifyBanner from "@/components/VerifyBanner";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+});
 
 const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -39,8 +42,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="it" className={`${inter.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col bg-gray-50 font-sans text-gray-900">
+    <html lang="it" className={`${jakarta.variable} h-full`}>
+      <body className="flex min-h-full flex-col font-sans">
         {ADSENSE_CLIENT && (
           <Script
             id="adsense-script"
