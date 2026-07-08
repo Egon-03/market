@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  phone        String?
+  createdAt    DateTime  @default(now())
+  listings     Listing[]
+}
+
+model Listing {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  // Prezzo in CHF. null = "Prezzo da concordare", 0 = "Gratis"
+  price       Float?
+  category    String
+  condition   String   @default("usato")
+  canton      String
+  city        String?
+  // JSON array di percorsi immagine
+  images      String   @default("[]")
+  status      String   @default("attivo") // attivo | venduto
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([category, status])
+  @@index([canton])
+  @@index([createdAt])
+}
