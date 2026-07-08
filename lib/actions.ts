@@ -9,8 +9,10 @@ import crypto from "crypto";
 import { db } from "@/lib/db";
 import { createSession, destroySession, getSessionUserId } from "@/lib/auth";
 import { sendVerificationEmail } from "@/lib/email";
-import { CATEGORIES, CONDITIONS } from "@/lib/categories";
+import { CONDITIONS, FUEL_TYPES, TRANSMISSIONS, getCategory } from "@/lib/categories";
 import { CANTONS } from "@/lib/cantons";
+
+const VEHICLE_CATEGORY = "auto-moto";
 
 const VERIFY_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 ore
 
@@ -136,6 +138,7 @@ export async function createListingAction(
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const category = String(formData.get("category") ?? "");
+  const subcategory = String(formData.get("subcategory") ?? "");
   const condition = String(formData.get("condition") ?? "usato");
   const canton = String(formData.get("canton") ?? "");
   const city = String(formData.get("city") ?? "").trim() || null;
@@ -148,8 +151,10 @@ export async function createListingAction(
     return { error: "Il titolo può contenere al massimo 100 caratteri." };
   if (description.length < 20)
     return { error: "La descrizione deve contenere almeno 20 caratteri." };
-  if (!CATEGORIES.some((c) => c.slug === category))
-    return { error: "Seleziona una categoria valida." };
+  const categoryDef = getCategory(category);
+  if (!categoryDef) return { error: "Seleziona una categoria valida." };
+  if (!categoryDef.subcategories.some((s) => s.slug === subcategory))
+    return { error: "Seleziona una sottocategoria valida." };
   if (!CONDITIONS.some((c) => c.value === condition))
     return { error: "Seleziona una condizione valida." };
   if (!CANTONS.some((c) => c.code === canton))
@@ -164,6 +169,58 @@ export async function createListingAction(
       return { error: "Inserisci un prezzo valido." };
   }
 
+  // Campi specifici veicoli, salvati solo per la categoria Auto & Moto
+  let brand: string | null = null;
+  let model: string | null = null;
+  let year: number | null = null;
+  let mileageKm: number | null = null;
+  let fuelType: string | null = null;
+  let transmission: string | null = null;
+  let powerHp: number | null = null;
+
+  if (category === VEHICLE_CATEGORY) {
+    brand = String(formData.get("brand") ?? "").trim() || null;
+    model = String(formData.get("model") ?? "").trim() || null;
+    if (!brand) return { error: "Indica la marca del veicolo." };
+    if (!model) return { error: "Indica il modello del veicolo." };
+
+    const yearRaw = String(formData.get("year") ?? "");
+    if (yearRaw) {
+      year = Number(yearRaw);
+      const currentYear = new Date().getFullYear();
+      if (!Number.isInteger(year) || year < 1950 || year > currentYear + 1)
+        return { error: "Inserisci un anno di immatricolazione valido." };
+    }
+
+    const mileageRaw = String(formData.get("mileageKm") ?? "");
+    if (mileageRaw) {
+      mileageKm = Number(mileageRaw);
+      if (!Number.isFinite(mileageKm) || mileageKm < 0 || mileageKm > 2_000_000)
+        return { error: "Inserisci un chilometraggio valido." };
+    }
+
+    const fuelRaw = String(formData.get("fuelType") ?? "");
+    if (fuelRaw) {
+      if (!FUEL_TYPES.some((f) => f.value === fuelRaw))
+        return { error: "Seleziona un'alimentazione valida." };
+      fuelType = fuelRaw;
+    }
+
+    const transmissionRaw = String(formData.get("transmission") ?? "");
+    if (transmissionRaw) {
+      if (!TRANSMISSIONS.some((t) => t.value === transmissionRaw))
+        return { error: "Seleziona un cambio valido." };
+      transmission = transmissionRaw;
+    }
+
+    const powerRaw = String(formData.get("powerHp") ?? "");
+    if (powerRaw) {
+      powerHp = Number(powerRaw);
+      if (!Number.isInteger(powerHp) || powerHp < 1 || powerHp > 5000)
+        return { error: "Inserisci una potenza (CV) valida." };
+    }
+  }
+
   const files = formData.getAll("images").filter((f): f is File => f instanceof File);
   const images = await saveImages(files);
   if (!Array.isArray(images)) return images;
@@ -174,11 +231,19 @@ export async function createListingAction(
       description,
       price,
       category,
+      subcategory,
       condition,
       canton,
       city,
       images: JSON.stringify(images),
       userId,
+      brand,
+      model,
+      year,
+      mileageKm,
+      fuelType,
+      transmission,
+      powerHp,
     },
   });
 

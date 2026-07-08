@@ -21,6 +21,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily" as const,
       priority: 0.8,
     })),
+    ...CATEGORIES.flatMap((c) =>
+      c.subcategories.map((s) => ({
+        url: `${SITE_URL}/annunci/${c.slug}/${s.slug}`,
+        changeFrequency: "daily" as const,
+        priority: 0.7,
+      }))
+    ),
     ...listings.map((l) => ({
       url: `${SITE_URL}/annunci/${l.id}`,
       lastModified: l.updatedAt,

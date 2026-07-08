@@ -15,6 +15,7 @@ const PAGE_SIZE = 24;
 type SearchParams = Promise<{
   q?: string;
   categoria?: string;
+  sottocategoria?: string;
   cantone?: string;
   prezzoMin?: string;
   prezzoMax?: string;
@@ -28,9 +29,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const params = await searchParams;
   const category = params.categoria ? getCategory(params.categoria) : undefined;
+  const subcategory =
+    category && params.sottocategoria
+      ? category.subcategories.find((s) => s.slug === params.sottocategoria)
+      : undefined;
   const parts: string[] = [];
   if (params.q) parts.push(`"${params.q}"`);
-  if (category) parts.push(category.name);
+  if (subcategory) parts.push(subcategory.name);
+  else if (category) parts.push(category.name);
   if (params.cantone) parts.push(getCantonName(params.cantone));
   const title =
     parts.length > 0 ? `Annunci: ${parts.join(" · ")}` : "Tutti gli annunci";
@@ -48,16 +54,23 @@ export default async function ListingsPage({
   const params = await searchParams;
   const q = params.q?.trim() ?? "";
   const categoria = params.categoria ?? "";
+  const sottocategoria = params.sottocategoria ?? "";
   const cantone = params.cantone ?? "";
   const prezzoMin = Number(params.prezzoMin);
   const prezzoMax = Number(params.prezzoMax);
   const page = Math.max(1, Number(params.pagina) || 1);
+  const activeCategory = categoria ? getCategory(categoria) : undefined;
+  const validSub =
+    activeCategory && sottocategoria
+      ? activeCategory.subcategories.some((s) => s.slug === sottocategoria)
+      : false;
 
   const where: Prisma.ListingWhereInput = { status: "attivo" };
   if (q) {
     where.OR = [{ title: { contains: q } }, { description: { contains: q } }];
   }
   if (categoria) where.category = categoria;
+  if (validSub) where.subcategory = sottocategoria;
   if (cantone) where.canton = cantone;
   if (Number.isFinite(prezzoMin) && params.prezzoMin) {
     where.price = { ...(where.price as object), gte: prezzoMin };
@@ -81,6 +94,7 @@ export default async function ListingsPage({
     const sp = new URLSearchParams();
     if (q) sp.set("q", q);
     if (categoria) sp.set("categoria", categoria);
+    if (validSub) sp.set("sottocategoria", sottocategoria);
     if (cantone) sp.set("cantone", cantone);
     if (params.prezzoMin) sp.set("prezzoMin", params.prezzoMin);
     if (params.prezzoMax) sp.set("prezzoMax", params.prezzoMax);
@@ -89,7 +103,9 @@ export default async function ListingsPage({
     return `/annunci${qs ? `?${qs}` : ""}`;
   }
 
-  const activeCategory = categoria ? getCategory(categoria) : undefined;
+  const activeSubcategory = validSub
+    ? activeCategory?.subcategories.find((s) => s.slug === sottocategoria)
+    : undefined;
 
   return (
     <div className="flex flex-col gap-6 lg:flex-row">
@@ -116,6 +132,26 @@ export default async function ListingsPage({
               ))}
             </select>
           </div>
+          {activeCategory && (
+            <div>
+              <label htmlFor="sottocategoria" className="label">
+                Sottocategoria
+              </label>
+              <select
+                id="sottocategoria"
+                name="sottocategoria"
+                defaultValue={validSub ? sottocategoria : ""}
+                className="input"
+              >
+                <option value="">Tutte</option>
+                {activeCategory.subcategories.map((s) => (
+                  <option key={s.slug} value={s.slug}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <label htmlFor="cantone" className="label">
               Cantone
@@ -176,11 +212,13 @@ export default async function ListingsPage({
       <div className="min-w-0 flex-1">
         <div className="mb-6 border-b border-ink/12 pb-4">
           <h1 className="display text-3xl">
-            {activeCategory
-              ? activeCategory.name
-              : q
-                ? `Risultati per “${q}”`
-                : "Tutti gli annunci"}
+            {activeSubcategory
+              ? activeSubcategory.name
+              : activeCategory
+                ? activeCategory.name
+                : q
+                  ? `Risultati per “${q}”`
+                  : "Tutti gli annunci"}
           </h1>
           <p className="mt-1.5 text-sm tabular-nums text-ash">
             {total} {total === 1 ? "annuncio trovato" : "annunci trovati"}

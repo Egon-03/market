@@ -5,7 +5,14 @@ import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { formatPrice, formatDate, parseImages } from "@/lib/format";
 import { getCantonName } from "@/lib/cantons";
-import { getCategory, getConditionLabel } from "@/lib/categories";
+import {
+  getCategory,
+  getConditionLabel,
+  getFuelTypeLabel,
+  getSubcategory,
+  getSubcategoryName,
+  getTransmissionLabel,
+} from "@/lib/categories";
 import ListingCard from "@/components/ListingCard";
 import AdSlot from "@/components/AdSlot";
 import MessageForm from "@/components/MessageForm";
@@ -15,9 +22,11 @@ import { ClockIcon, EyeIcon, ShieldIcon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
-// La rotta serve sia le pagine categoria (/annunci/elettronica) sia il
-// dettaglio annuncio (/annunci/<id>): gli slug categoria sono riservati.
-type Params = Promise<{ id: string }>;
+// Questa rotta catch-all serve tre casi:
+//  - /annunci/<categoria>              → pagina categoria (CategoryBrowse)
+//  - /annunci/<categoria>/<sottocat>    → pagina sottocategoria (CategoryBrowse)
+//  - /annunci/<id>                     → dettaglio annuncio (un solo segmento, non una categoria valida)
+type Params = Promise<{ slug: string[] }>;
 type SearchParams = Promise<{ pagina?: string }>;
 
 export async function generateMetadata({
@@ -25,18 +34,28 @@ export async function generateMetadata({
 }: {
   params: Params;
 }): Promise<Metadata> {
-  const { id } = await params;
+  const { slug } = await params;
 
-  const categoryPage = getCategory(id);
-  if (categoryPage) {
-    return {
-      title: `${categoryPage.name} — annunci gratuiti`,
-      description: `Annunci gratuiti nella categoria ${categoryPage.name}: compra e vendi senza commissioni su Mercatino.ch.`,
-      alternates: { canonical: `/annunci/${categoryPage.slug}` },
-    };
+  if (slug.length >= 1) {
+    const categoryPage = getCategory(slug[0]);
+    if (categoryPage) {
+      const sub = slug[1] ? getSubcategory(categoryPage.slug, slug[1]) : undefined;
+      if (slug.length === 1 || sub) {
+        const name = sub ? sub.name : categoryPage.name;
+        const canonical = sub
+          ? `/annunci/${categoryPage.slug}/${sub.slug}`
+          : `/annunci/${categoryPage.slug}`;
+        return {
+          title: `${name} — annunci gratuiti`,
+          description: `Annunci gratuiti nella categoria ${name}: compra e vendi senza commissioni su Mercatino.ch.`,
+          alternates: { canonical },
+        };
+      }
+    }
   }
 
-  const listing = await db.listing.findUnique({ where: { id } });
+  const id = slug[0];
+  const listing = slug.length === 1 ? await db.listing.findUnique({ where: { id } }) : null;
   if (!listing) return { title: "Annuncio non trovato" };
   const images = parseImages(listing.images);
   return {
@@ -50,21 +69,31 @@ export async function generateMetadata({
   };
 }
 
-export default async function ListingDetailPage({
+export default async function AnnunciCatchAllPage({
   params,
   searchParams,
 }: {
   params: Params;
   searchParams: SearchParams;
 }) {
-  const { id } = await params;
+  const { slug } = await params;
 
-  const categoryPage = getCategory(id);
-  if (categoryPage) {
+  // Caso 1-2: pagina categoria o sottocategoria
+  const categoryPage = getCategory(slug[0]);
+  if (categoryPage && slug.length <= 2) {
+    const subSlug = slug[1];
+    const subcategory = subSlug ? getSubcategory(categoryPage.slug, subSlug) : undefined;
+    if (slug.length === 2 && !subcategory) notFound();
+
     const { pagina } = await searchParams;
     const page = Math.max(1, Number(pagina) || 1);
-    return <CategoryBrowse category={categoryPage} page={page} />;
+    return <CategoryBrowse category={categoryPage} subcategory={subcategory} page={page} />;
   }
+
+  // Caso 3: dettaglio annuncio (un solo segmento che non è una categoria)
+  if (slug.length !== 1) notFound();
+  const id = slug[0];
+
   const listing = await db.listing.findUnique({
     where: { id },
     include: { user: { select: { id: true, name: true, createdAt: true } } },
@@ -79,6 +108,7 @@ export default async function ListingDetailPage({
   const images = parseImages(listing.images);
   const category = getCategory(listing.category);
   const sold = listing.status === "venduto";
+  const isVehicle = listing.category === "auto-moto";
 
   const similar = await db.listing.findMany({
     where: { category: listing.category, status: "attivo", id: { not: listing.id } },
@@ -92,6 +122,7 @@ export default async function ListingDetailPage({
     name: listing.title,
     description: listing.description,
     image: images,
+    brand: listing.brand ?? undefined,
     offers: {
       "@type": "Offer",
       price: listing.price ?? undefined,
@@ -105,6 +136,36 @@ export default async function ListingDetailPage({
           : "https://schema.org/UsedCondition",
     },
   };
+
+  const infoRows = [
+    {
+      label: "Categoria",
+      value: listing.subcategory
+        ? getSubcategoryName(listing.category, listing.subcategory)
+        : (category?.name ?? listing.category),
+    },
+    { label: "Condizione", value: getConditionLabel(listing.condition) },
+    {
+      label: "Luogo",
+      value: `${getCantonName(listing.canton)}${listing.city ? ` · ${listing.city}` : ""}`,
+    },
+  ];
+
+  const vehicleRows = isVehicle
+    ? [
+        listing.brand ? { label: "Marca", value: listing.brand } : null,
+        listing.model ? { label: "Modello", value: listing.model } : null,
+        listing.year ? { label: "Anno", value: String(listing.year) } : null,
+        listing.mileageKm != null
+          ? { label: "Chilometraggio", value: `${listing.mileageKm.toLocaleString("it-CH")} km` }
+          : null,
+        listing.fuelType ? { label: "Alimentazione", value: getFuelTypeLabel(listing.fuelType) } : null,
+        listing.transmission
+          ? { label: "Cambio", value: getTransmissionLabel(listing.transmission) }
+          : null,
+        listing.powerHp ? { label: "Potenza", value: `${listing.powerHp} CV` } : null,
+      ].filter((r): r is { label: string; value: string } => r !== null)
+    : [];
 
   return (
     <div className="space-y-8">
@@ -123,6 +184,17 @@ export default async function ListingDetailPage({
             <span>›</span>
             <Link href={`/annunci/${category.slug}`} className="font-medium transition hover:text-swiss">
               {category.name}
+            </Link>
+          </>
+        )}
+        {category && listing.subcategory && (
+          <>
+            <span>›</span>
+            <Link
+              href={`/annunci/${category.slug}/${listing.subcategory}`}
+              className="font-medium transition hover:text-swiss"
+            >
+              {getSubcategoryName(category.slug, listing.subcategory)}
             </Link>
           </>
         )}
@@ -164,14 +236,7 @@ export default async function ListingDetailPage({
             )}
 
             <dl className="mt-7 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-ink/12 bg-ink/12 sm:grid-cols-3">
-              {[
-                { label: "Categoria", value: category?.name ?? listing.category },
-                { label: "Condizione", value: getConditionLabel(listing.condition) },
-                {
-                  label: "Luogo",
-                  value: `${getCantonName(listing.canton)}${listing.city ? ` · ${listing.city}` : ""}`,
-                },
-              ].map((row) => (
+              {infoRows.map((row) => (
                 <div key={row.label} className="bg-white px-4 py-3">
                   <dt className="font-display text-[10px] font-bold uppercase tracking-[0.18em] text-ash">
                     {row.label}
@@ -180,6 +245,22 @@ export default async function ListingDetailPage({
                 </div>
               ))}
             </dl>
+
+            {vehicleRows.length > 0 && (
+              <>
+                <h2 className="display mt-8 text-xl">Scheda tecnica</h2>
+                <dl className="mt-3 flex flex-wrap gap-3">
+                  {vehicleRows.map((row) => (
+                    <div key={row.label} className="rounded-lg border border-ink/12 bg-white px-4 py-3">
+                      <dt className="font-display text-[10px] font-bold uppercase tracking-[0.18em] text-ash">
+                        {row.label}
+                      </dt>
+                      <dd className="mt-1 text-sm font-semibold tabular-nums text-ink">{row.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </>
+            )}
 
             <h2 className="display mt-8 text-xl">Descrizione</h2>
             <p className="mt-3 max-w-prose whitespace-pre-line text-[15px] leading-relaxed text-ink/75">

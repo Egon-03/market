@@ -2,9 +2,19 @@
 
 import { useActionState, useState } from "react";
 import { createListingAction, type ActionState } from "@/lib/actions";
-import { CATEGORIES, CONDITIONS } from "@/lib/categories";
+import {
+  CATEGORIES,
+  CONDITIONS,
+  FUEL_TYPES,
+  TRANSMISSIONS,
+  VEHICLE_BRANDS,
+  getCategory,
+} from "@/lib/categories";
 import { CANTONS } from "@/lib/cantons";
 import CategoryIcon from "@/components/CategoryIcon";
+
+const VEHICLE_CATEGORY = "auto-moto";
+const CURRENT_YEAR = new Date().getFullYear();
 
 function StepHeading({ n, title }: { n: string; title: string }) {
   return (
@@ -23,6 +33,15 @@ export default function ListingForm() {
   const [priceMode, setPriceMode] = useState<"fixed" | "free" | "negotiable">("fixed");
   const [previews, setPreviews] = useState<string[]>([]);
   const [category, setCategory] = useState("");
+  const [subcategory, setSubcategory] = useState("");
+
+  const categoryDef = getCategory(category);
+  const isVehicle = category === VEHICLE_CATEGORY;
+
+  function onCategoryChange(slug: string) {
+    setCategory(slug);
+    setSubcategory("");
+  }
 
   function onFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []).slice(0, 5);
@@ -79,7 +98,7 @@ export default function ListingForm() {
                   name="category"
                   required
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(e) => onCategoryChange(e.target.value)}
                   className={`input ${category ? "pl-10" : ""}`}
                 >
                   <option value="">Seleziona…</option>
@@ -92,23 +111,153 @@ export default function ListingForm() {
               </div>
             </div>
             <div>
-              <label htmlFor="condition" className="label">
-                Condizione
+              <label htmlFor="subcategory" className="label">
+                Sottocategoria
               </label>
-              <select id="condition" name="condition" defaultValue="usato" className="input">
-                {CONDITIONS.map((c) => (
-                  <option key={c.value} value={c.value}>
-                    {c.label}
+              <select
+                id="subcategory"
+                name="subcategory"
+                required
+                disabled={!categoryDef}
+                value={subcategory}
+                onChange={(e) => setSubcategory(e.target.value)}
+                className="input disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">
+                  {categoryDef ? "Seleziona…" : "Scegli prima una categoria"}
+                </option>
+                {categoryDef?.subcategories.map((s) => (
+                  <option key={s.slug} value={s.slug}>
+                    {s.name}
                   </option>
                 ))}
               </select>
             </div>
           </div>
+          <div>
+            <label htmlFor="condition" className="label">
+              Condizione
+            </label>
+            <select id="condition" name="condition" defaultValue="usato" className="input max-w-64">
+              {CONDITIONS.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
+      {isVehicle && (
+        <div className="card border-swiss/30 p-6 sm:p-7">
+          <StepHeading n="02" title="Dettagli del veicolo" />
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="brand" className="label">
+                Marca
+              </label>
+              <input
+                id="brand"
+                name="brand"
+                type="text"
+                required={isVehicle}
+                list="vehicle-brands"
+                placeholder="Es. Volkswagen"
+                className="input"
+              />
+              <datalist id="vehicle-brands">
+                {VEHICLE_BRANDS.map((b) => (
+                  <option key={b} value={b} />
+                ))}
+              </datalist>
+            </div>
+            <div>
+              <label htmlFor="model" className="label">
+                Modello
+              </label>
+              <input
+                id="model"
+                name="model"
+                type="text"
+                required={isVehicle}
+                placeholder="Es. Golf 8 GTI"
+                className="input"
+              />
+            </div>
+            <div>
+              <label htmlFor="year" className="label">
+                Anno immatricolazione
+              </label>
+              <input
+                id="year"
+                name="year"
+                type="number"
+                min={1950}
+                max={CURRENT_YEAR + 1}
+                placeholder={String(CURRENT_YEAR)}
+                className="input"
+              />
+            </div>
+            <div>
+              <label htmlFor="mileageKm" className="label">
+                Chilometraggio (km)
+              </label>
+              <input
+                id="mileageKm"
+                name="mileageKm"
+                type="number"
+                min={0}
+                placeholder="Es. 45000"
+                className="input"
+              />
+            </div>
+            <div>
+              <label htmlFor="fuelType" className="label">
+                Alimentazione
+              </label>
+              <select id="fuelType" name="fuelType" defaultValue="" className="input">
+                <option value="">Non specificato</option>
+                {FUEL_TYPES.map((f) => (
+                  <option key={f.value} value={f.value}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="transmission" className="label">
+                Cambio
+              </label>
+              <select id="transmission" name="transmission" defaultValue="" className="input">
+                <option value="">Non specificato</option>
+                {TRANSMISSIONS.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="powerHp" className="label">
+                Potenza (CV)
+              </label>
+              <input
+                id="powerHp"
+                name="powerHp"
+                type="number"
+                min={1}
+                max={5000}
+                placeholder="Es. 245"
+                className="input"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="card p-6 sm:p-7">
-        <StepHeading n="02" title="Prezzo" />
+        <StepHeading n={isVehicle ? "03" : "02"} title="Prezzo" />
         <div className="flex flex-wrap gap-2.5">
           {(
             [
@@ -157,7 +306,7 @@ export default function ListingForm() {
       </div>
 
       <div className="card p-6 sm:p-7">
-        <StepHeading n="03" title="Dove si trova?" />
+        <StepHeading n={isVehicle ? "04" : "03"} title="Dove si trova?" />
         <div className="grid gap-5 sm:grid-cols-2">
           <div>
             <label htmlFor="canton" className="label">
@@ -182,7 +331,7 @@ export default function ListingForm() {
       </div>
 
       <div className="card p-6 sm:p-7">
-        <StepHeading n="04" title="Foto" />
+        <StepHeading n={isVehicle ? "05" : "04"} title="Foto" />
         <p className="-mt-3 mb-5 text-sm text-ash">
           Fino a 5 foto (JPG, PNG o WebP, max 5 MB ciascuna). Gli annunci con foto
           ricevono molti più contatti!

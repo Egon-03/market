@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatPrice, parseImages, timeAgo } from "@/lib/format";
 import { getCantonName } from "@/lib/cantons";
-import { getCategory } from "@/lib/categories";
+import { getCategory, getSubcategoryName } from "@/lib/categories";
 import CategoryIcon from "@/components/CategoryIcon";
 
 type ListingCardProps = {
@@ -14,8 +14,12 @@ type ListingCardProps = {
     city: string | null;
     images: string;
     category: string;
+    subcategory?: string | null;
     status: string;
     createdAt: Date;
+    year?: number | null;
+    mileageKm?: number | null;
+    powerHp?: number | null;
   };
 };
 
@@ -24,6 +28,13 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const cover = images[0];
   const category = getCategory(listing.category);
   const sold = listing.status === "venduto";
+  const isVehicle = listing.category === "auto-moto";
+
+  const vehicleSpecs = [
+    listing.year ? String(listing.year) : null,
+    listing.mileageKm != null ? `${listing.mileageKm.toLocaleString("it-CH")} km` : null,
+    listing.powerHp ? `${listing.powerHp} CV` : null,
+  ].filter(Boolean);
 
   return (
     <Link
@@ -52,6 +63,11 @@ export default function ListingCard({ listing }: ListingCardProps) {
         >
           {sold ? "Venduto" : formatPrice(listing.price)}
         </span>
+        {isVehicle && vehicleSpecs.length > 0 && (
+          <span className="absolute bottom-2.5 left-2.5 rounded-md bg-ink/85 px-2 py-1 font-display text-[11px] font-bold tabular-nums text-paper backdrop-blur-sm">
+            {vehicleSpecs.join(" · ")}
+          </span>
+        )}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-3.5">
         <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-ink">
@@ -62,7 +78,10 @@ export default function ListingCard({ listing }: ListingCardProps) {
             <CategoryIcon slug={listing.category} className="h-3.5 w-3.5" />
           </span>
           <span className="truncate">
-            {category?.name} · {listing.city ? `${listing.city}, ` : ""}
+            {listing.subcategory
+              ? getSubcategoryName(listing.category, listing.subcategory)
+              : category?.name}{" "}
+            · {listing.city ? `${listing.city}, ` : ""}
             {getCantonName(listing.canton)}
           </span>
           <span className="ml-auto shrink-0">{timeAgo(listing.createdAt)}</span>

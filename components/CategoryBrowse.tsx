@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import type { Category } from "@/lib/categories";
+import type { Category, Subcategory } from "@/lib/categories";
 import { CATEGORIES } from "@/lib/categories";
 import ListingCard from "@/components/ListingCard";
 import AdSlot from "@/components/AdSlot";
@@ -10,13 +10,26 @@ const PAGE_SIZE = 24;
 
 type Props = {
   category: Category;
+  subcategory?: Subcategory;
   page: number;
 };
 
-/** Pagina categoria con URL dedicato (es. /annunci/elettronica) — ottima per la SEO. */
-export default async function CategoryBrowse({ category, page }: Props) {
-  const where = { category: category.slug, status: "attivo" };
-  const [total, listings] = await Promise.all([
+/**
+ * Pagina categoria/sottocategoria con URL dedicato — es. /annunci/auto-moto
+ * o /annunci/auto-moto/automobili — ottima per la SEO.
+ */
+export default async function CategoryBrowse({ category, subcategory, page }: Props) {
+  const where = {
+    category: category.slug,
+    status: "attivo",
+    ...(subcategory ? { subcategory: subcategory.slug } : {}),
+  };
+
+  const basePath = subcategory
+    ? `/annunci/${category.slug}/${subcategory.slug}`
+    : `/annunci/${category.slug}`;
+
+  const [total, listings, subcategoryCounts] = await Promise.all([
     db.listing.count({ where }),
     db.listing.findMany({
       where,
@@ -24,18 +37,38 @@ export default async function CategoryBrowse({ category, page }: Props) {
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
     }),
+    subcategory
+      ? Promise.resolve([])
+      : db.listing.groupBy({
+          by: ["subcategory"],
+          where: { category: category.slug, status: "attivo" },
+          _count: true,
+        }),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const countBySub = Object.fromEntries(
+    subcategoryCounts.map((c) => [c.subcategory, c._count])
+  );
 
   return (
     <div className="space-y-10">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-sm text-ash" aria-label="Breadcrumb">
+      <nav className="flex flex-wrap items-center gap-1.5 text-sm text-ash" aria-label="Breadcrumb">
         <Link href="/" className="font-medium transition hover:text-swiss">Home</Link>
         <span>›</span>
         <Link href="/annunci" className="font-medium transition hover:text-swiss">Annunci</Link>
         <span>›</span>
-        <span className="font-medium text-ink">{category.name}</span>
+        {subcategory ? (
+          <>
+            <Link href={`/annunci/${category.slug}`} className="font-medium transition hover:text-swiss">
+              {category.name}
+            </Link>
+            <span>›</span>
+            <span className="font-medium text-ink">{subcategory.name}</span>
+          </>
+        ) : (
+          <span className="font-medium text-ink">{category.name}</span>
+        )}
       </nav>
 
       {/* Testata di categoria */}
@@ -45,9 +78,9 @@ export default async function CategoryBrowse({ category, page }: Props) {
             <CategoryIcon slug={category.slug} className="h-8 w-8" />
           </span>
           <div>
-            <p className="eyebrow">Categoria</p>
+            <p className="eyebrow">{subcategory ? category.name : "Categoria"}</p>
             <h1 className="display mt-1 text-3xl sm:text-4xl">
-              {category.name} — annunci gratuiti
+              {subcategory ? subcategory.name : category.name} — annunci gratuiti
             </h1>
           </div>
         </div>
@@ -62,13 +95,50 @@ export default async function CategoryBrowse({ category, page }: Props) {
         </p>
       </div>
 
+      {/* Sottocategorie */}
+      {category.subcategories.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href={`/annunci/${category.slug}`}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+              !subcategory
+                ? "border-ink bg-ink text-paper"
+                : "border-ink/20 bg-white text-ink hover:border-ink"
+            }`}
+          >
+            Tutte
+          </Link>
+          {category.subcategories.map((s) => {
+            const active = subcategory?.slug === s.slug;
+            return (
+              <Link
+                key={s.slug}
+                href={`/annunci/${category.slug}/${s.slug}`}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                  active
+                    ? "border-swiss bg-swiss text-white"
+                    : "border-ink/20 bg-white text-ink hover:border-ink"
+                }`}
+              >
+                {s.name}
+                {!subcategory && countBySub[s.slug] > 0 && (
+                  <span className={`tabular-nums ${active ? "text-white/75" : "text-ash"}`}>
+                    {countBySub[s.slug]}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
       {listings.length === 0 ? (
         <div className="card border-dashed p-14 text-center">
           <span className="mx-auto block w-fit text-ink/20">
             <CategoryIcon slug={category.slug} className="h-12 w-12" />
           </span>
           <p className="display mt-4 text-xl">
-            Ancora nessun annuncio in questa categoria
+            Ancora nessun annuncio in questa {subcategory ? "sottocategoria" : "categoria"}
           </p>
           <Link href="/pubblica" className="mt-2 inline-block text-sm font-bold text-swiss hover:underline">
             Pubblica tu il primo, è gratis →
@@ -92,7 +162,7 @@ export default async function CategoryBrowse({ category, page }: Props) {
         <nav className="flex items-center justify-center gap-3" aria-label="Paginazione">
           {page > 1 && (
             <Link
-              href={`/annunci/${category.slug}${page - 1 > 1 ? `?pagina=${page - 1}` : ""}`}
+              href={`${basePath}${page - 1 > 1 ? `?pagina=${page - 1}` : ""}`}
               className="btn-secondary"
             >
               ← Precedente
@@ -102,10 +172,7 @@ export default async function CategoryBrowse({ category, page }: Props) {
             Pagina {page} di {totalPages}
           </span>
           {page < totalPages && (
-            <Link
-              href={`/annunci/${category.slug}?pagina=${page + 1}`}
-              className="btn-secondary"
-            >
+            <Link href={`${basePath}?pagina=${page + 1}`} className="btn-secondary">
               Successiva →
             </Link>
           )}

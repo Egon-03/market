@@ -29,6 +29,7 @@ model Listing {
   // Prezzo in CHF. null = "Prezzo da concordare", 0 = "Gratis"
   price       Float?
   category    String
+  subcategory String?
   condition   String   @default("usato")
   canton      String
   city        String?
@@ -36,6 +37,14 @@ model Listing {
   images      String   @default("[]")
   status      String   @default("attivo") // attivo | venduto
   views       Int      @default(0)
+  // Campi specifici veicoli (categoria auto-moto), null per tutte le altre categorie
+  brand        String?
+  model        String?
+  year         Int?
+  mileageKm    Int?
+  fuelType     String?
+  transmission String?
+  powerHp      Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   userId      String
@@ -43,6 +52,7 @@ model Listing {
   conversations Conversation[]
 
   @@index([category, status])
+  @@index([category, subcategory])
   @@index([canton])
   @@index([createdAt])
 }
