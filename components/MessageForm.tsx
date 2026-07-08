@@ -21,7 +21,7 @@ export default function MessageForm({ listingId, loggedIn }: Props) {
 
   if (!loggedIn) {
     return (
-      <Link href={`/accedi?next=/annunci/${listingId}`} className="btn-primary mt-5 w-full">
+      <Link href={`/accedi?next=/annunci/${listingId}`} className="btn-swiss mt-5 w-full">
         Accedi per contattare
       </Link>
     );
@@ -39,14 +39,14 @@ export default function MessageForm({ listingId, loggedIn }: Props) {
         className="input resize-none"
       />
       {state?.error && (
-        <p className="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+        <p className="rounded-lg border border-swiss/25 bg-swiss/5 px-3 py-2 text-sm font-medium text-swiss-deep">
           {state.error}
         </p>
       )}
-      <button type="submit" disabled={pending} className="btn-primary w-full">
-        {pending ? "Invio…" : "💬 Invia messaggio"}
+      <button type="submit" disabled={pending} className="btn-swiss w-full">
+        {pending ? "Invio…" : "Invia messaggio"}
       </button>
-      <p className="text-center text-xs text-stone-400">
+      <p className="text-center text-xs text-ash">
         La conversazione resta privata dentro il sito.
       </p>
     </form>

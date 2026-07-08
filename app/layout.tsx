@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Archivo, Instrument_Sans } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import VerifyBanner from "@/components/VerifyBanner";
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
+const archivo = Archivo({
   subsets: ["latin"],
-  variable: "--font-jakarta",
+  weight: ["600", "700", "800", "900"],
+  variable: "--font-archivo",
+});
+
+const instrument = Instrument_Sans({
+  subsets: ["latin"],
+  variable: "--font-instrument",
 });
 
 const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
@@ -42,7 +48,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="it" className={`${jakarta.variable} h-full`}>
+    <html lang="it" className={`${archivo.variable} ${instrument.variable} h-full`}>
       <body className="flex min-h-full flex-col font-sans">
         {ADSENSE_CLIENT && (
           <Script

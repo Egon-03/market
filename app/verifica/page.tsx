@@ -34,33 +34,29 @@ export default async function VerifyPage({
   }
 
   return (
-    <div className="mx-auto max-w-md animate-fade-up py-10">
-      <div className="card p-10 text-center">
+    <div className="mx-auto max-w-md animate-rise py-10">
+      <div className="card relative overflow-hidden p-10 text-center">
+        <div
+          className={`pointer-events-none absolute inset-x-0 top-0 h-1.5 ${outcome === "ok" ? "bg-swiss" : "bg-ink"}`}
+          aria-hidden="true"
+        />
         {outcome === "ok" ? (
           <>
-            <span className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-b from-emerald-50 to-emerald-100 text-5xl shadow-inner">
-              ✅
-            </span>
-            <h1 className="mt-5 text-2xl font-extrabold tracking-tight text-stone-900">
-              E-mail confermata!
-            </h1>
-            <p className="mt-2 leading-relaxed text-stone-500">
+            <h1 className="display mt-4 text-3xl">E-mail confermata!</h1>
+            <p className="mt-2 leading-relaxed text-ash">
               Il tuo account è attivo: ora puoi pubblicare annunci e contattare i
               venditori.
             </p>
-            <Link href="/pubblica" className="btn-primary mt-7">
+            <Link href="/pubblica" className="btn-swiss mt-7">
               Pubblica il tuo primo annuncio
             </Link>
           </>
         ) : (
           <>
-            <span className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-b from-amber-50 to-amber-100 text-5xl shadow-inner">
-              ⚠️
-            </span>
-            <h1 className="mt-5 text-2xl font-extrabold tracking-tight text-stone-900">
+            <h1 className="display mt-4 text-3xl">
               {outcome === "expired" ? "Link scaduto" : "Link non valido"}
             </h1>
-            <p className="mt-2 leading-relaxed text-stone-500">
+            <p className="mt-2 leading-relaxed text-ash">
               {outcome === "expired"
                 ? "Il link di verifica è valido 24 ore. Accedi e richiedi un nuovo invio dal banner in alto."
                 : "Il link di verifica non è valido o è già stato utilizzato."}

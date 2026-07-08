@@ -12,19 +12,17 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
   );
 
   return (
-    <div className="mx-auto max-w-md animate-fade-up py-6">
+    <div className="mx-auto max-w-md animate-rise py-6">
       <div className="card relative overflow-hidden p-8">
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600"
-          aria-hidden="true"
-        />
-        <h1 className="text-2xl font-extrabold tracking-tight text-stone-900">
-          {mode === "login" ? "Bentornato 👋" : "Crea il tuo account gratuito"}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-swiss" aria-hidden="true" />
+        <p className="eyebrow">{mode === "login" ? "Bentornato" : "Nuovo account"}</p>
+        <h1 className="display mt-1 text-3xl">
+          {mode === "login" ? "Accedi" : "Registrati gratis"}
         </h1>
-        <p className="mt-1.5 text-sm text-stone-500">
+        <p className="mt-2 text-sm text-ash">
           {mode === "login"
-            ? "Accedi per gestire i tuoi annunci e i tuoi messaggi."
-            : "Registrarsi è gratis e richiede meno di un minuto."}
+            ? "Entra per gestire i tuoi annunci e i tuoi messaggi."
+            : "Richiede meno di un minuto, per sempre gratuito."}
         </p>
 
         <form action={formAction} className="mt-7 space-y-5">
@@ -38,7 +36,7 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
               </div>
               <div>
                 <label htmlFor="phone" className="label">
-                  Telefono <span className="font-normal text-stone-400">(facoltativo)</span>
+                  Telefono <span className="font-normal normal-case tracking-normal text-ash">(facoltativo)</span>
                 </label>
                 <input id="phone" name="phone" type="tel" className="input" />
               </div>
@@ -66,12 +64,12 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
           </div>
 
           {state?.error && (
-            <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            <p className="rounded-lg border border-swiss/25 bg-swiss/5 px-4 py-3 text-sm font-medium text-swiss-deep">
               {state.error}
             </p>
           )}
 
-          <button type="submit" disabled={pending} className="btn-primary w-full !py-3">
+          <button type="submit" disabled={pending} className="btn-primary w-full !py-3.5">
             {pending
               ? "Attendere…"
               : mode === "login"
@@ -80,18 +78,18 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
           </button>
         </form>
 
-        <p className="mt-7 text-center text-sm text-stone-500">
+        <p className="mt-7 text-center text-sm text-ash">
           {mode === "login" ? (
             <>
               Non hai un account?{" "}
-              <Link href="/registrati" className="font-bold text-emerald-700 hover:underline">
+              <Link href="/registrati" className="font-bold text-ink hover:text-swiss">
                 Registrati gratis
               </Link>
             </>
           ) : (
             <>
               Hai già un account?{" "}
-              <Link href="/accedi" className="font-bold text-emerald-700 hover:underline">
+              <Link href="/accedi" className="font-bold text-ink hover:text-swiss">
                 Accedi
               </Link>
             </>

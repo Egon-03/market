@@ -14,18 +14,18 @@ export default async function VerifyBanner() {
   if (record?.emailVerified) return null;
 
   return (
-    <div className="border-b border-amber-200/70 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2.5 text-sm font-medium text-amber-900">
+    <div className="border-b border-ink/12 bg-ink">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-1.5 px-4 py-2.5 text-sm font-medium text-paper/85">
         <span>
-          📧 Conferma il tuo indirizzo e-mail per pubblicare annunci e contattare i
+          Conferma il tuo indirizzo e-mail per pubblicare annunci e contattare i
           venditori.
         </span>
         <form action={resendVerificationAction}>
           <button
             type="submit"
-            className="cursor-pointer rounded-lg border border-amber-300 bg-white/60 px-3 py-1 text-xs font-bold text-amber-800 transition hover:bg-white"
+            className="cursor-pointer rounded-full border border-paper/30 px-3 py-1 font-display text-xs font-bold uppercase tracking-wide text-paper transition hover:bg-swiss hover:border-swiss"
           >
-            Reinvia e-mail di verifica
+            Reinvia e-mail
           </button>
         </form>
       </div>

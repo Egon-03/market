@@ -1,18 +1,16 @@
 import Link from "next/link";
+import { SearchIcon } from "@/components/icons";
 
 export default function NotFound() {
   return (
-    <div className="flex animate-fade-up flex-col items-center justify-center py-24 text-center">
-      <span className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-b from-stone-100 to-stone-200 text-6xl shadow-inner">
-        🔍
-      </span>
-      <h1 className="mt-6 text-3xl font-extrabold tracking-tight text-stone-900">
-        Pagina non trovata
-      </h1>
-      <p className="mt-2 text-stone-500">
+    <div className="flex animate-rise flex-col items-center justify-center py-24 text-center">
+      <p className="display text-[8rem] leading-none text-ink/10 sm:text-[10rem]">404</p>
+      <SearchIcon className="-mt-8 h-9 w-9 text-ink/30" />
+      <h1 className="display mt-5 text-3xl">Pagina non trovata</h1>
+      <p className="mt-2 text-ash">
         L&apos;annuncio potrebbe essere stato venduto o rimosso.
       </p>
-      <Link href="/annunci" className="btn-primary mt-8">
+      <Link href="/annunci" className="btn-swiss mt-8">
         Sfoglia tutti gli annunci
       </Link>
     </div>

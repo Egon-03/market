@@ -5,7 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { formatPrice, parseImages } from "@/lib/format";
-import { getCategory } from "@/lib/categories";
+import CategoryIcon from "@/components/CategoryIcon";
 import ReplyForm from "@/components/ReplyForm";
 
 export const metadata: Metadata = { title: "Conversazione" };
@@ -54,13 +54,12 @@ export default async function ConversationPage({
   const isSeller = conversation.listing.userId === user.id;
   const otherName = isSeller ? conversation.buyer.name : conversation.listing.user.name;
   const cover = parseImages(conversation.listing.images)[0];
-  const icon = getCategory(conversation.listing.category)?.icon ?? "📦";
 
   return (
-    <div className="mx-auto max-w-2xl animate-fade-up">
+    <div className="mx-auto max-w-2xl animate-rise">
       <Link
         href="/messaggi"
-        className="text-sm font-semibold text-stone-400 transition hover:text-emerald-700"
+        className="text-sm font-semibold text-ash transition hover:text-swiss"
       >
         ← Tutti i messaggi
       </Link>
@@ -68,27 +67,29 @@ export default async function ConversationPage({
       {/* Annuncio di riferimento */}
       <Link
         href={`/annunci/${conversation.listing.id}`}
-        className="card mt-3 flex items-center gap-3 p-3 transition hover:shadow-md"
+        className="card mt-3 flex items-center gap-3 p-3 transition hover:border-ink"
       >
-        <div className="relative h-12 w-14 shrink-0 overflow-hidden rounded-xl bg-stone-100">
+        <div className="relative h-12 w-14 shrink-0 overflow-hidden rounded-lg bg-smoke">
           {cover ? (
             <Image src={cover} alt="" fill sizes="56px" className="object-cover" />
           ) : (
-            <div className="flex h-full items-center justify-center text-xl opacity-70">{icon}</div>
+            <div className="flex h-full items-center justify-center text-ink/20">
+              <CategoryIcon slug={conversation.listing.category} className="h-5 w-5" />
+            </div>
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold text-stone-800">
+          <p className="truncate text-sm font-bold text-ink">
             {conversation.listing.title}
           </p>
-          <p className="text-sm font-extrabold text-emerald-700">
+          <p className="text-sm font-black text-swiss">
             {formatPrice(conversation.listing.price)}
             {conversation.listing.status === "venduto" && (
-              <span className="ml-2 text-xs font-medium text-stone-400">(venduto)</span>
+              <span className="ml-2 text-xs font-medium text-ash">(venduto)</span>
             )}
           </p>
         </div>
-        <span className="hidden text-xs font-medium text-stone-400 sm:block">
+        <span className="hidden text-xs font-medium text-ash sm:block">
           {isSeller ? `Acquirente: ${otherName}` : `Venditore: ${otherName}`}
         </span>
       </Link>
@@ -100,19 +101,19 @@ export default async function ConversationPage({
           return (
             <div key={msg.id} className={`flex items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}>
               {!mine && (
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-stone-400 to-stone-500 text-xs font-extrabold text-white">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink font-display text-xs font-black text-paper">
                   {otherName.charAt(0).toUpperCase()}
                 </span>
               )}
               <div
-                className={`max-w-[80%] px-4 py-2.5 text-sm shadow-sm ${
+                className={`max-w-[80%] px-4 py-2.5 text-sm ${
                   mine
-                    ? "rounded-2xl rounded-br-md bg-gradient-to-b from-emerald-500 to-emerald-600 text-white"
-                    : "rounded-2xl rounded-bl-md bg-stone-100 text-stone-800"
+                    ? "rounded-2xl rounded-br-md bg-swiss text-white"
+                    : "rounded-2xl rounded-bl-md bg-smoke text-ink"
                 }`}
               >
                 <p className="whitespace-pre-line break-words">{msg.body}</p>
-                <p className={`mt-1 text-right text-[10px] ${mine ? "text-emerald-100/90" : "text-stone-400"}`}>
+                <p className={`mt-1 text-right text-[10px] tabular-nums ${mine ? "text-white/75" : "text-ash"}`}>
                   {msg.createdAt.toLocaleString("it-CH", {
                     day: "2-digit",
                     month: "2-digit",

@@ -11,18 +11,16 @@ export const metadata: Metadata = {
 
 export default function HowItWorksPage() {
   return (
-    <div className="mx-auto max-w-3xl animate-fade-up space-y-6">
-      <h1 className="text-3xl font-extrabold tracking-tight text-stone-900">
-        Come funziona Mercatino.ch
-      </h1>
+    <div className="mx-auto max-w-3xl animate-rise space-y-10">
+      <div className="border-b border-ink/12 pb-6">
+        <p className="eyebrow">Le regole del gioco</p>
+        <h1 className="display mt-1 text-4xl sm:text-5xl">Come funziona</h1>
+      </div>
 
       <section className="card relative overflow-hidden p-7">
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600"
-          aria-hidden="true"
-        />
-        <h2 className="text-xl font-extrabold text-stone-900">Gratuito. Davvero.</h2>
-        <p className="mt-2.5 leading-relaxed text-stone-600">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-swiss" aria-hidden="true" />
+        <h2 className="display text-xl">Gratuito. Davvero.</h2>
+        <p className="mt-3 max-w-prose leading-relaxed text-ink/75">
           Pubblicare un annuncio non costa nulla, e non ci sono commissioni sulla
           vendita. Il sito si finanzia esclusivamente tramite gli annunci
           pubblicitari che vedi tra i contenuti: è così che possiamo offrire il
@@ -31,10 +29,8 @@ export default function HowItWorksPage() {
       </section>
 
       <section className="card p-7">
-        <h2 className="text-xl font-extrabold text-stone-900">
-          Nessun pagamento tramite il sito
-        </h2>
-        <p className="mt-2.5 leading-relaxed text-stone-600">
+        <h2 className="display text-xl">Nessun pagamento tramite il sito</h2>
+        <p className="mt-3 max-w-prose leading-relaxed text-ink/75">
           Mercatino.ch non gestisce pagamenti, spedizioni o garanzie: mette
           semplicemente in contatto chi vende con chi compra. Prezzo, consegna e
           pagamento si concordano direttamente tra le persone, come in un vero
@@ -44,52 +40,51 @@ export default function HowItWorksPage() {
 
       <AdSlot slot="1000000007" className="min-h-24" />
 
-      <section className="card p-7">
-        <h2 className="text-xl font-extrabold text-stone-900">In tre passi</h2>
-        <ol className="mt-4 space-y-4">
+      <section>
+        <h2 className="display mb-5 text-2xl">In tre passi</h2>
+        <div className="grid gap-px overflow-hidden rounded-xl border border-ink/12 bg-ink/12 sm:grid-cols-3">
           {[
             {
+              n: "1",
               title: "Registrati gratis",
               text: "con la tua e-mail (serve solo per gestire i tuoi annunci ed essere contattato).",
             },
             {
+              n: "2",
               title: "Pubblica l'annuncio",
               text: "con foto, descrizione, prezzo e luogo.",
             },
             {
+              n: "3",
               title: "Rispondi agli interessati",
               text: "nella chat interna e concludi l'affare di persona.",
             },
-          ].map((step, i) => (
-            <li key={step.title} className="flex gap-4">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-b from-emerald-500 to-emerald-600 text-sm font-extrabold text-white shadow-md shadow-emerald-600/25">
-                {i + 1}
-              </span>
-              <p className="pt-1 leading-relaxed text-stone-600">
-                <strong className="font-extrabold text-stone-900">{step.title}</strong>{" "}
-                {step.text}
-              </p>
-            </li>
+          ].map((step) => (
+            <div key={step.n} className="bg-white p-6">
+              <span className="font-display text-4xl font-black text-swiss">{step.n}</span>
+              <h3 className="display mt-3 text-base">{step.title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-ash">{step.text}</p>
+            </div>
           ))}
-        </ol>
+        </div>
       </section>
 
-      <section className="rounded-2xl border border-amber-200/70 bg-gradient-to-b from-amber-50 to-orange-50/50 p-7">
-        <h2 className="flex items-center gap-2.5 text-xl font-extrabold text-amber-900">
-          <ShieldIcon className="h-6 w-6 text-amber-600" />
+      <section className="rounded-xl bg-ink p-7 text-paper">
+        <h2 className="flex items-center gap-2.5 font-display text-xl font-black uppercase tracking-wide">
+          <ShieldIcon className="h-6 w-6 text-swiss" />
           Consigli di sicurezza
         </h2>
-        <ul className="mt-3.5 space-y-2 leading-relaxed text-amber-800">
-          <li>· Incontra l&apos;altra persona in un luogo pubblico e frequentato.</li>
-          <li>· Esamina l&apos;articolo prima di pagare.</li>
-          <li>· Preferisci il pagamento in contanti alla consegna.</li>
-          <li>· Non inviare mai denaro in anticipo a sconosciuti.</li>
-          <li>· Diffida di offerte troppo belle per essere vere.</li>
+        <ul className="mt-4 space-y-2 leading-relaxed text-paper/75">
+          <li>— Incontra l&apos;altra persona in un luogo pubblico e frequentato.</li>
+          <li>— Esamina l&apos;articolo prima di pagare.</li>
+          <li>— Preferisci il pagamento in contanti alla consegna.</li>
+          <li>— Non inviare mai denaro in anticipo a sconosciuti.</li>
+          <li>— Diffida di offerte troppo belle per essere vere.</li>
         </ul>
       </section>
 
       <div className="pt-2 text-center">
-        <Link href="/pubblica" className="btn-primary !px-10 !py-3.5 text-base">
+        <Link href="/pubblica" className="btn-swiss !px-12 !py-4 text-base">
           Pubblica il tuo primo annuncio
         </Link>
       </div>

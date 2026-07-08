@@ -25,14 +25,14 @@ export default function ReplyForm({ conversationId }: { conversationId: string }
           rows={2}
           maxLength={2000}
           placeholder="Scrivi un messaggio…"
-          className="w-full resize-none rounded-xl border-0 bg-transparent px-3 py-2 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none"
+          className="w-full resize-none rounded-lg border-0 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-ash focus:outline-none"
         />
-        <button type="submit" disabled={pending} className="btn-primary shrink-0 self-end !px-6">
+        <button type="submit" disabled={pending} className="btn-swiss shrink-0 self-end !px-6">
           {pending ? "…" : "Invia"}
         </button>
       </div>
       {state?.error && (
-        <p className="mt-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+        <p className="mt-2 rounded-lg border border-swiss/25 bg-swiss/5 px-3 py-2 text-sm font-medium text-swiss-deep">
           {state.error}
         </p>
       )}

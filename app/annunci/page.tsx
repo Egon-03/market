@@ -5,6 +5,7 @@ import { CATEGORIES, getCategory } from "@/lib/categories";
 import { CANTONS, getCantonName } from "@/lib/cantons";
 import ListingCard from "@/components/ListingCard";
 import AdSlot from "@/components/AdSlot";
+import { SearchIcon } from "@/components/icons";
 import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -95,7 +96,7 @@ export default async function ListingsPage({
       {/* Filtri */}
       <aside className="w-full shrink-0 lg:w-64">
         <form action="/annunci" method="get" className="card space-y-5 p-5">
-          <h2 className="font-extrabold text-stone-900">Filtri</h2>
+          <h2 className="display text-lg">Filtri</h2>
           {q && <input type="hidden" name="q" value={q} />}
           <div>
             <label htmlFor="categoria" className="label">
@@ -161,7 +162,7 @@ export default async function ListingsPage({
           </button>
           <Link
             href="/annunci"
-            className="block text-center text-xs font-semibold text-stone-400 transition hover:text-stone-600"
+            className="block text-center text-xs font-semibold text-ash transition hover:text-ink"
           >
             Azzera filtri
           </Link>
@@ -173,27 +174,27 @@ export default async function ListingsPage({
 
       {/* Risultati */}
       <div className="min-w-0 flex-1">
-        <div className="mb-5">
-          <h1 className="text-2xl font-extrabold tracking-tight text-stone-900">
+        <div className="mb-6 border-b border-ink/12 pb-4">
+          <h1 className="display text-3xl">
             {activeCategory
-              ? `${activeCategory.icon} ${activeCategory.name}`
+              ? activeCategory.name
               : q
                 ? `Risultati per “${q}”`
                 : "Tutti gli annunci"}
           </h1>
-          <p className="mt-1 text-sm text-stone-500">
+          <p className="mt-1.5 text-sm tabular-nums text-ash">
             {total} {total === 1 ? "annuncio trovato" : "annunci trovati"}
             {cantone ? ` in ${getCantonName(cantone)}` : ""}
           </p>
         </div>
 
         {listings.length === 0 ? (
-          <div className="card border-dashed p-12 text-center">
-            <p className="text-5xl">🔎</p>
-            <p className="mt-3 font-bold text-stone-700">Nessun annuncio trovato</p>
-            <p className="mt-1 text-sm text-stone-500">
+          <div className="card border-dashed p-14 text-center">
+            <SearchIcon className="mx-auto h-10 w-10 text-ink/20" />
+            <p className="display mt-4 text-xl">Nessun annuncio trovato</p>
+            <p className="mt-2 text-sm text-ash">
               Prova a modificare i filtri o{" "}
-              <Link href="/pubblica" className="font-bold text-emerald-700 hover:underline">
+              <Link href="/pubblica" className="font-bold text-swiss hover:underline">
                 pubblica tu il primo annuncio
               </Link>
               .
@@ -221,7 +222,7 @@ export default async function ListingsPage({
                 ← Precedente
               </Link>
             )}
-            <span className="px-2 text-sm font-semibold text-stone-500">
+            <span className="px-2 text-sm font-semibold tabular-nums text-ash">
               Pagina {page} di {totalPages}
             </span>
             {page < totalPages && (

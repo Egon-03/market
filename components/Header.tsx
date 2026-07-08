@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { logoutAction } from "@/lib/actions";
 import SearchBar from "@/components/SearchBar";
-import { StoreIcon, ChatIcon, PlusIcon } from "@/components/icons";
+import { ChatIcon, PlusIcon, TagIcon } from "@/components/icons";
 
 export default async function Header() {
   const user = await getCurrentUser();
@@ -21,46 +21,46 @@ export default async function Header() {
     : 0;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-stone-200/70 bg-white/90 shadow-[0_1px_12px_rgba(28,25,23,0.05)] backdrop-blur-lg">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3">
+    <header className="sticky top-0 z-40 border-b border-ink/12 bg-paper/95 backdrop-blur-md">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3.5 sm:px-6">
         <Link href="/" className="group flex items-center gap-2.5">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-lg shadow-emerald-600/25 transition-transform group-hover:scale-105">
-            <StoreIcon className="h-5.5 w-5.5" />
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-swiss text-white transition-transform duration-150 group-hover:-rotate-6">
+            <TagIcon className="h-5 w-5" />
           </span>
-          <span className="text-xl font-extrabold tracking-tight text-stone-900">
-            Mercatino<span className="text-emerald-600">.ch</span>
+          <span className="font-display text-xl font-black lowercase tracking-tight">
+            mercatino<span className="text-swiss">.ch</span>
           </span>
         </Link>
 
-        <div className="order-3 w-full sm:order-2 sm:w-auto sm:max-w-xl sm:flex-1">
+        <div className="order-3 w-full sm:order-2 sm:w-auto sm:max-w-lg sm:flex-1">
           <SearchBar />
         </div>
 
-        <nav className="order-2 ml-auto flex items-center gap-2 sm:order-3 sm:gap-4">
+        <nav className="order-2 ml-auto flex items-center gap-1 sm:order-3 sm:gap-2">
           {user ? (
             <>
               <Link
                 href="/messaggi"
-                className="relative flex items-center gap-1.5 rounded-xl px-2 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100 hover:text-emerald-700"
+                className="relative flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-ink/70 transition hover:bg-smoke hover:text-ink"
               >
                 <ChatIcon className="h-5 w-5" />
                 <span className="hidden lg:inline">Messaggi</span>
                 {unread > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-gradient-to-b from-amber-400 to-amber-500 px-1 text-[10px] font-extrabold text-amber-950 shadow">
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-swiss px-1 font-display text-[10px] font-black text-white">
                     {unread}
                   </span>
                 )}
               </Link>
               <Link
                 href="/i-miei-annunci"
-                className="hidden rounded-xl px-2 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100 hover:text-emerald-700 md:block"
+                className="hidden rounded-full px-3 py-2 text-sm font-semibold text-ink/70 transition hover:bg-smoke hover:text-ink md:block"
               >
                 I miei annunci
               </Link>
               <form action={logoutAction}>
                 <button
                   type="submit"
-                  className="cursor-pointer rounded-xl px-2 py-2 text-sm font-semibold text-stone-400 transition hover:bg-stone-100 hover:text-stone-700"
+                  className="cursor-pointer rounded-full px-3 py-2 text-sm font-semibold text-ash transition hover:bg-smoke hover:text-ink"
                 >
                   Esci
                 </button>
@@ -69,13 +69,13 @@ export default async function Header() {
           ) : (
             <Link
               href="/accedi"
-              className="rounded-xl px-3 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100 hover:text-emerald-700"
+              className="rounded-full px-3 py-2 text-sm font-semibold text-ink/70 transition hover:bg-smoke hover:text-ink"
             >
               Accedi
             </Link>
           )}
-          <Link href="/pubblica" className="btn-primary !px-4">
-            <PlusIcon className="h-4 w-4" />
+          <Link href="/pubblica" className="btn-swiss !px-4 !py-2.5 !text-xs">
+            <PlusIcon className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Pubblica gratis</span>
             <span className="sm:hidden">Pubblica</span>
           </Link>
