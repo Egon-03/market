@@ -8,7 +8,7 @@ import path from "path";
 import crypto from "crypto";
 import { db } from "@/lib/db";
 import { createSession, destroySession, getSessionUserId } from "@/lib/auth";
-import { sendVerificationEmail } from "@/lib/email";
+import { sendVerificationEmail, sendNewMessageEmail } from "@/lib/email";
 import { CONDITIONS, FUEL_TYPES, TRANSMISSIONS, getCategory } from "@/lib/categories";
 import { CANTONS } from "@/lib/cantons";
 
@@ -298,7 +298,10 @@ export async function startConversationAction(
   if (body.length > MAX_MESSAGE_LENGTH)
     return { error: `Il messaggio può contenere al massimo ${MAX_MESSAGE_LENGTH} caratteri.` };
 
-  const listing = await db.listing.findUnique({ where: { id: listingId } });
+  const listing = await db.listing.findUnique({
+    where: { id: listingId },
+    include: { user: { select: { email: true, name: true } } },
+  });
   if (!listing) return { error: "Annuncio non trovato." };
   if (listing.userId === userId)
     return { error: "Non puoi contattare te stesso." };
@@ -312,6 +315,15 @@ export async function startConversationAction(
   await db.message.create({
     data: { conversationId: conversation.id, senderId: userId, body },
   });
+
+  sendNewMessageEmail({
+    to: listing.user.email,
+    recipientName: listing.user.name,
+    senderName: sender.name,
+    listingTitle: listing.title,
+    preview: body,
+    conversationId: conversation.id,
+  }).catch((err) => console.error("[email] invio notifica fallito:", err));
 
   redirect(`/messaggi/${conversation.id}`);
 }
@@ -331,13 +343,20 @@ export async function replyMessageAction(
 
   const conversation = await db.conversation.findUnique({
     where: { id: conversationId },
-    include: { listing: { select: { userId: true } } },
+    include: {
+      listing: { select: { title: true, userId: true, user: { select: { email: true, name: true } } } },
+      buyer: { select: { email: true, name: true } },
+    },
   });
   if (
     !conversation ||
     (conversation.buyerId !== userId && conversation.listing.userId !== userId)
   )
     return { error: "Conversazione non trovata." };
+
+  const sender = await db.user.findUnique({ where: { id: userId }, select: { name: true } });
+  const isSenderSeller = conversation.listing.userId === userId;
+  const recipient = isSenderSeller ? conversation.buyer : conversation.listing.user;
 
   await db.message.create({
     data: { conversationId, senderId: userId, body },
@@ -346,6 +365,15 @@ export async function replyMessageAction(
     where: { id: conversationId },
     data: { updatedAt: new Date() },
   });
+
+  sendNewMessageEmail({
+    to: recipient.email,
+    recipientName: recipient.name,
+    senderName: sender?.name ?? "Un utente",
+    listingTitle: conversation.listing.title,
+    preview: body,
+    conversationId,
+  }).catch((err) => console.error("[email] invio notifica fallito:", err));
 
   revalidatePath(`/messaggi/${conversationId}`);
   revalidatePath("/messaggi");
