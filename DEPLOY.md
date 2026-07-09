@@ -160,6 +160,19 @@ Segui la sezione "Attivare Google AdSense" nel [README](./README.md).
 Ricordati di aggiungere `NEXT_PUBLIC_ADSENSE_CLIENT` tra le variabili
 d'ambiente su Vercel e di rifare il deploy dopo averla impostata.
 
+## 10. Diventare amministratore (moderazione)
+
+Il sito ha una dashboard di moderazione su `/admin/segnalazioni` per
+esaminare le segnalazioni di annunci e utenti, rimuovere contenuti e
+sospendere account. Per diventare amministratore:
+
+1. Registrati sul sito vero con la tua e-mail reale.
+2. Apri Neon → il tuo progetto → **SQL Editor** ed esegui:
+   ```sql
+   UPDATE "User" SET role = 'admin' WHERE email = 'tua-email@esempio.ch';
+   ```
+3. Ricarica il sito: vedrai il link **Admin** nell'intestazione.
+
 ---
 
 ## Checklist di sicurezza (già implementata nel codice)
@@ -168,9 +181,10 @@ d'ambiente su Vercel e di rifare il deploy dopo averla impostata.
 - ✅ Password con hashing bcrypt, mai salvate in chiaro
 - ✅ Cookie di sessione `httpOnly` + `secure` + `sameSite`, non leggibili da JavaScript
 - ✅ Header di sicurezza HTTP (CSP, HSTS, X-Frame-Options, ecc.)
-- ✅ Rate limiting su login, registrazione e messaggi (anti-bruteforce e anti-spam)
+- ✅ Rate limiting su login, registrazione, messaggi e segnalazioni (anti-bruteforce e anti-spam)
 - ✅ Verifica e-mail obbligatoria prima di pubblicare o contattare
 - ✅ Nessun recapito personale (e-mail/telefono) esposto pubblicamente
+- ✅ Sistema di segnalazioni + dashboard di moderazione per rimuovere annunci e sospendere utenti problematici
 
 Cosa resta a tuo carico:
 

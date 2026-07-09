@@ -3,22 +3,26 @@ import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { logoutAction } from "@/lib/actions";
 import SearchBar from "@/components/SearchBar";
-import { ChatIcon, PlusIcon, TagIcon } from "@/components/icons";
+import { ChatIcon, PlusIcon, ShieldIcon, TagIcon } from "@/components/icons";
 
 export default async function Header() {
   const user = await getCurrentUser();
+  const isAdmin = user?.role === "admin";
 
-  const unread = user
-    ? await db.message.count({
-        where: {
-          read: false,
-          senderId: { not: user.id },
-          conversation: {
-            OR: [{ buyerId: user.id }, { listing: { userId: user.id } }],
+  const [unread, pendingReports] = await Promise.all([
+    user
+      ? db.message.count({
+          where: {
+            read: false,
+            senderId: { not: user.id },
+            conversation: {
+              OR: [{ buyerId: user.id }, { listing: { userId: user.id } }],
+            },
           },
-        },
-      })
-    : 0;
+        })
+      : Promise.resolve(0),
+    isAdmin ? db.report.count({ where: { status: "in_attesa" } }) : Promise.resolve(0),
+  ]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-ink/12 bg-paper/95 backdrop-blur-md">
@@ -57,6 +61,20 @@ export default async function Header() {
               >
                 I miei annunci
               </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin/segnalazioni"
+                  className="relative hidden items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-ink/70 transition hover:bg-smoke hover:text-ink lg:flex"
+                >
+                  <ShieldIcon className="h-4.5 w-4.5" />
+                  Admin
+                  {pendingReports > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-ink px-1 font-display text-[10px] font-black text-white">
+                      {pendingReports}
+                    </span>
+                  )}
+                </Link>
+              )}
               <form action={logoutAction}>
                 <button
                   type="submit"

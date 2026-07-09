@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 
 const SESSION_COOKIE = "session";
@@ -48,8 +49,26 @@ export async function getSessionUserId(): Promise<string | null> {
 export async function getCurrentUser() {
   const userId = await getSessionUserId();
   if (!userId) return null;
-  return db.user.findUnique({
+  const user = await db.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, name: true, phone: true, createdAt: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      phone: true,
+      createdAt: true,
+      role: true,
+      banned: true,
+    },
   });
+  // Un utente sospeso viene trattato come non autenticato ovunque nel sito.
+  if (!user || user.banned) return null;
+  return user;
+}
+
+/** Richiede un amministratore: reindirizza alla home chiunque altro. */
+export async function requireAdmin() {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "admin") redirect("/");
+  return user;
 }

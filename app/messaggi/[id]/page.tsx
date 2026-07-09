@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { formatPrice, parseImages } from "@/lib/format";
 import CategoryIcon from "@/components/CategoryIcon";
 import ReplyForm from "@/components/ReplyForm";
+import ReportButton from "@/components/ReportButton";
 
 export const metadata: Metadata = { title: "Conversazione" };
 export const dynamic = "force-dynamic";
@@ -32,10 +33,10 @@ export default async function ConversationPage({
           category: true,
           status: true,
           userId: true,
-          user: { select: { name: true } },
+          user: { select: { id: true, name: true } },
         },
       },
-      buyer: { select: { name: true } },
+      buyer: { select: { id: true, name: true } },
       messages: { orderBy: { createdAt: "asc" } },
     },
   });
@@ -52,7 +53,8 @@ export default async function ConversationPage({
   });
 
   const isSeller = conversation.listing.userId === user.id;
-  const otherName = isSeller ? conversation.buyer.name : conversation.listing.user.name;
+  const otherUser = isSeller ? conversation.buyer : conversation.listing.user;
+  const otherName = otherUser.name;
   const cover = parseImages(conversation.listing.images)[0];
 
   return (
@@ -128,6 +130,16 @@ export default async function ConversationPage({
       </div>
 
       <ReplyForm conversationId={conversation.id} />
+
+      <div className="mt-3 flex justify-end">
+        <ReportButton
+          targetType="user"
+          targetId={otherUser.id}
+          targetLabel={otherName}
+          loggedIn
+          triggerLabel={`Segnala ${otherName}`}
+        />
+      </div>
     </div>
   );
 }

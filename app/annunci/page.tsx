@@ -67,7 +67,10 @@ export default async function ListingsPage({
 
   const where: Prisma.ListingWhereInput = { status: "attivo" };
   if (q) {
-    where.OR = [{ title: { contains: q } }, { description: { contains: q } }];
+    where.OR = [
+      { title: { contains: q, mode: "insensitive" } },
+      { description: { contains: q, mode: "insensitive" } },
+    ];
   }
   if (categoria) where.category = categoria;
   if (validSub) where.subcategory = sottocategoria;

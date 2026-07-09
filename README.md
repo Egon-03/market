@@ -15,7 +15,8 @@ nulla e il sito **non gestisce alcun pagamento**. L'unica fonte di guadagno è
 - 👤 **Account utenti** — registrazione/login con sessioni JWT in cookie httpOnly (password con bcrypt)
 - ✅ **Verifica e-mail** — chi non conferma l'indirizzo non può pubblicare né contattare (anti-spam); invio via SMTP o link nel log in sviluppo
 - 💬 **Messaggistica interna con notifiche e-mail** — compratore e venditore si scrivono dentro il sito; nessun recapito personale viene esposto
-- 🛡️ **Sicurezza** — header HTTP (CSP, HSTS, X-Frame-Options…), rate limiting anti-bruteforce/spam su login, registrazione e messaggi, cookie di sessione httpOnly
+- 🚩 **Segnalazioni e moderazione** — chiunque può segnalare un annuncio o un utente (spam, truffa, contenuto vietato…); una dashboard di amministrazione (`/admin/segnalazioni`) permette di esaminare le segnalazioni, rimuovere annunci e sospendere utenti
+- 🛡️ **Sicurezza** — header HTTP (CSP, HSTS, X-Frame-Options…), rate limiting anti-bruteforce/spam su login, registrazione, messaggi e segnalazioni, cookie di sessione httpOnly
 - 💰 **Monetizzazione AdSense** — slot pubblicitari in homepage, lista annunci, pagine categoria, dettaglio e sidebar; in sviluppo mostrano un segnaposto
 - 🔎 **SEO** — rendering lato server, sitemap.xml dinamica, robots.txt, metadati Open Graph e dati strutturati schema.org/Product
 
@@ -67,6 +68,20 @@ Senza credenziali R2 configurate, le foto caricate finiscono in `public/uploads/
 Senza `NEXT_PUBLIC_ADSENSE_CLIENT` configurato, al posto degli annunci vengono
 mostrati dei riquadri segnaposto: utile in sviluppo per verificare il layout.
 
+## Moderazione: diventare amministratore
+
+Chi ha `role = "admin"` nel database vede in più un link **Admin** in alto e
+può accedere a `/admin/segnalazioni` per esaminare le segnalazioni, rimuovere
+annunci e sospendere utenti. Non esiste (ancora) un pannello per promuovere
+altri utenti: il primo amministratore va impostato direttamente sul database.
+
+In locale il seed promuove già `demo@example.com`. In produzione, dopo esserti
+registrato con il tuo account reale, apri l'**SQL Editor** di Neon ed esegui:
+
+```sql
+UPDATE "User" SET role = 'admin' WHERE email = 'tua-email@esempio.ch';
+```
+
 ## Deploy in produzione — gratis, con dominio proprio
 
 Guida completa passo-passo (nessun costo con traffico normale per un sito
@@ -94,9 +109,10 @@ app/                  Pagine (App Router)
   accedi/ registrati/ Autenticazione
   verifica/           Conferma dell'indirizzo e-mail
   come-funziona/      Pagina informativa
+  admin/              Dashboard di moderazione (solo utenti con role="admin")
   sitemap.ts robots.ts SEO
-components/           Header, Footer, AdSlot, ListingCard, form…
-lib/                  db, auth, email, storage, rate limit, server actions…
+components/           Header, Footer, AdSlot, ListingCard, ReportButton, form…
+lib/                  db, auth, email, storage, rate limit, report, server actions…
 prisma/               Schema database, migrazioni e seed demo
 public/ads.txt        Dichiarazione publisher AdSense
 DEPLOY.md             Guida al deploy in produzione

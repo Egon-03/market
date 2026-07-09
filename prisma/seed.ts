@@ -1220,13 +1220,14 @@ async function main() {
 
   const demo = await db.user.upsert({
     where: { email: "demo@example.com" },
-    update: { emailVerified: new Date() },
+    update: { emailVerified: new Date(), role: "admin" },
     create: {
       email: "demo@example.com",
       name: "Utente Demo",
       passwordHash,
       phone: "+41 79 000 00 00",
       emailVerified: new Date(),
+      role: "admin", // comodo per provare in locale la dashboard di moderazione
     },
   });
 
@@ -1267,12 +1268,16 @@ async function main() {
   const owners = { demo, anna, marco, giulia };
 
   let bikeListingId: string | null = null;
+  let fiatPandaId: string | null = null;
   for (const { owner, ...data } of listings) {
     const listing = await db.listing.create({
       data: { ...data, userId: owners[owner ?? "demo"].id },
     });
     if (data.title === "Bicicletta da corsa carbonio taglia M") {
       bikeListingId = listing.id;
+    }
+    if (data.title === "Fiat Panda 1.2 69 CV, prima auto ideale") {
+      fiatPandaId = listing.id;
     }
   }
 
@@ -1298,8 +1303,30 @@ async function main() {
     });
   }
 
+  // Segnalazioni di esempio, per popolare la dashboard di moderazione
+  if (fiatPandaId) {
+    await db.report.create({
+      data: {
+        type: "listing",
+        reason: "ingannevole",
+        message: "Il prezzo indicato non corrisponde a quanto poi richiesto per telefono.",
+        reporterId: giulia.id,
+        listingId: fiatPandaId,
+      },
+    });
+  }
+  await db.report.create({
+    data: {
+      type: "user",
+      reason: "spam",
+      message: "Mi ha scritto più volte proponendo altri annunci non richiesti.",
+      reporterId: anna.id,
+      reportedUserId: marco.id,
+    },
+  });
+
   console.log(
-    `Seed completato: 4 utenti (demo@example.com, anna@example.com, marco@example.com, giulia@example.com — password: password123), ${listings.length} annunci su tutte le categorie e sottocategorie, una conversazione di esempio.`
+    `Seed completato: 4 utenti (demo@example.com [admin], anna@example.com, marco@example.com, giulia@example.com — password: password123), ${listings.length} annunci su tutte le categorie e sottocategorie, una conversazione e due segnalazioni di esempio.`
   );
 }
 

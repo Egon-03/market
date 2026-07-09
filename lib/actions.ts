@@ -106,6 +106,11 @@ export async function loginAction(
   const user = await db.user.findUnique({ where: { email } });
   if (!user || !(await bcrypt.compare(password, user.passwordHash)))
     return { error: "E-mail o password non corretti." };
+  if (user.banned)
+    return {
+      error:
+        "Il tuo account è stato sospeso per violazione delle regole del sito.",
+    };
 
   await createSession(user.id);
   redirect("/");
@@ -153,6 +158,7 @@ export async function createListingAction(
   if (!userId) redirect("/accedi?next=/pubblica");
 
   const author = await db.user.findUnique({ where: { id: userId } });
+  if (author?.banned) return { error: "Il tuo account è stato sospeso." };
   if (!author?.emailVerified)
     return {
       error:
@@ -319,6 +325,7 @@ export async function startConversationAction(
   if (!userId) redirect(`/accedi?next=/annunci/${listingId}`);
 
   const sender = await db.user.findUnique({ where: { id: userId } });
+  if (sender?.banned) return { error: "Il tuo account è stato sospeso." };
   if (!sender?.emailVerified)
     return {
       error:
@@ -375,6 +382,9 @@ export async function replyMessageAction(
   const userId = await getSessionUserId();
   if (!userId) redirect("/accedi");
 
+  const sender = await db.user.findUnique({ where: { id: userId }, select: { name: true, banned: true } });
+  if (sender?.banned) return { error: "Il tuo account è stato sospeso." };
+
   const allowedToMessage = await checkRateLimit({
     key: `message:${userId}`,
     limit: 20,
@@ -401,8 +411,6 @@ export async function replyMessageAction(
     (conversation.buyerId !== userId && conversation.listing.userId !== userId)
   )
     return { error: "Conversazione non trovata." };
-
-  const sender = await db.user.findUnique({ where: { id: userId }, select: { name: true } });
   const isSenderSeller = conversation.listing.userId === userId;
   const recipient = isSenderSeller ? conversation.buyer : conversation.listing.user;
 

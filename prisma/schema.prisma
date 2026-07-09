@@ -16,10 +16,14 @@ model User {
   emailVerified      DateTime?
   verifyToken        String?   @unique
   verifyTokenExpires DateTime?
+  role               String    @default("user") // user | admin
+  banned             Boolean   @default(false)
   createdAt          DateTime  @default(now())
   listings           Listing[]
   buyerConversations Conversation[] @relation("BuyerConversations")
   messages           Message[]
+  reportsMade        Report[]  @relation("ReportsMade")
+  reportsReceived    Report[]  @relation("ReportsReceivedAsUser")
 }
 
 model Listing {
@@ -50,6 +54,7 @@ model Listing {
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversations Conversation[]
+  reports       Report[]
 
   @@index([category, status])
   @@index([category, subcategory])
@@ -82,6 +87,32 @@ model Message {
   createdAt      DateTime     @default(now())
 
   @@index([conversationId])
+}
+
+/// Segnalazione di un annuncio o di un utente da parte di un membro della
+/// community. Esattamente uno tra listingId e reportedUserId è valorizzato,
+/// in base al valore di "type".
+model Report {
+  id             String    @id @default(cuid())
+  type           String    // listing | user
+  reason         String
+  message        String?
+  status         String    @default("in_attesa") // in_attesa | risolta | archiviata
+
+  reporterId     String
+  reporter       User      @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  listingId      String?
+  listing        Listing?  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  reportedUserId String?
+  reportedUser   User?     @relation("ReportsReceivedAsUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime  @default(now())
+  reviewedAt     DateTime?
+
+  @@index([status, createdAt])
+  @@index([type])
 }
 
 /// Contatore per il rate limiting (tentativi di login, registrazioni,

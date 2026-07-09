@@ -16,6 +16,7 @@ import {
 import ListingCard from "@/components/ListingCard";
 import AdSlot from "@/components/AdSlot";
 import MessageForm from "@/components/MessageForm";
+import ReportButton from "@/components/ReportButton";
 import ImageGallery from "@/components/ImageGallery";
 import CategoryBrowse from "@/components/CategoryBrowse";
 import { ClockIcon, EyeIcon, ShieldIcon } from "@/components/icons";
@@ -295,7 +296,18 @@ export default async function AnnunciCatchAllPage({
                 Gestisci questo annuncio
               </Link>
             ) : (
-              <MessageForm listingId={listing.id} loggedIn={Boolean(viewer)} />
+              <>
+                <MessageForm listingId={listing.id} loggedIn={Boolean(viewer)} />
+                <div className="mt-4 flex justify-end">
+                  <ReportButton
+                    targetType="user"
+                    targetId={listing.user.id}
+                    targetLabel={listing.user.name}
+                    loggedIn={Boolean(viewer)}
+                    triggerLabel="Segnala questo venditore"
+                  />
+                </div>
+              </>
             )}
           </div>
 
@@ -309,6 +321,16 @@ export default async function AnnunciCatchAllPage({
               <li>— Controlla l&apos;articolo prima di pagare</li>
               <li>— Non inviare mai denaro in anticipo</li>
             </ul>
+            {!isOwner && (
+              <div className="mt-4 border-t border-ink/10 pt-4">
+                <ReportButton
+                  targetType="listing"
+                  targetId={listing.id}
+                  targetLabel="questo annuncio"
+                  loggedIn={Boolean(viewer)}
+                />
+              </div>
+            )}
           </div>
 
           <AdSlot slot="1000000006" className="min-h-60" />
