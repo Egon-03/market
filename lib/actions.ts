@@ -3,12 +3,12 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import crypto from "crypto";
 import { db } from "@/lib/db";
 import { createSession, destroySession, getSessionUserId } from "@/lib/auth";
 import { sendVerificationEmail, sendNewMessageEmail } from "@/lib/email";
+import { saveUploadedImage, randomImageFilename } from "@/lib/storage";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { CONDITIONS, FUEL_TYPES, TRANSMISSIONS, getCategory } from "@/lib/categories";
 import { CANTONS } from "@/lib/cantons";
 
@@ -31,6 +31,15 @@ export async function registerAction(
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  const ip = await getClientIp();
+  const allowed = await checkRateLimit({
+    key: `register:${ip}`,
+    limit: 5,
+    windowMs: 60 * 60 * 1000, // 5 registrazioni/ora per IP
+  });
+  if (!allowed)
+    return { error: "Troppi tentativi di registrazione. Riprova tra qualche minuto." };
+
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
@@ -62,6 +71,13 @@ export async function resendVerificationAction(): Promise<void> {
   const user = await db.user.findUnique({ where: { id: userId } });
   if (!user || user.emailVerified) redirect("/");
 
+  const allowed = await checkRateLimit({
+    key: `resend-verify:${userId}`,
+    limit: 1,
+    windowMs: 60 * 1000, // 1 reinvio al minuto per utente
+  });
+  if (!allowed) redirect("/verifica/inviata");
+
   const token = newVerifyToken();
   await db.user.update({ where: { id: user.id }, data: token });
   await sendVerificationEmail(user.email, token.verifyToken);
@@ -74,6 +90,18 @@ export async function loginAction(
 ): Promise<ActionState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
+
+  const ip = await getClientIp();
+  // Limite specifico per coppia IP+account (blocca il bruteforce su un
+  // singolo utente) e limite più ampio per IP (blocca il credential
+  // stuffing su tanti account diversi), senza penalizzare utenti diversi
+  // che condividono lo stesso IP (reti aziendali, NAT).
+  const [perAccountAllowed, perIpAllowed] = await Promise.all([
+    checkRateLimit({ key: `login:${ip}:${email}`, limit: 10, windowMs: 15 * 60 * 1000 }),
+    checkRateLimit({ key: `login:${ip}`, limit: 40, windowMs: 15 * 60 * 1000 }),
+  ]);
+  if (!perAccountAllowed || !perIpAllowed)
+    return { error: "Troppi tentativi di accesso. Riprova tra qualche minuto." };
 
   const user = await db.user.findUnique({ where: { email } });
   if (!user || !(await bcrypt.compare(password, user.passwordHash)))
@@ -103,9 +131,6 @@ async function saveImages(files: File[]): Promise<string[] | { error: string }> 
   if (valid.length > MAX_IMAGES)
     return { error: `Puoi caricare al massimo ${MAX_IMAGES} immagini.` };
 
-  const dir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(dir, { recursive: true });
-
   const saved: string[] = [];
   for (const file of valid) {
     const ext = ALLOWED_TYPES[file.type];
@@ -113,10 +138,9 @@ async function saveImages(files: File[]): Promise<string[] | { error: string }> 
       return { error: "Formato immagine non supportato (usa JPG, PNG o WebP)." };
     if (file.size > MAX_IMAGE_BYTES)
       return { error: "Ogni immagine può pesare al massimo 5 MB." };
-    const filename = `${crypto.randomUUID()}${ext}`;
     const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(path.join(dir, filename), buffer);
-    saved.push(`/uploads/${filename}`);
+    const url = await saveUploadedImage(buffer, randomImageFilename(ext), file.type);
+    saved.push(url);
   }
   return saved;
 }
@@ -134,6 +158,14 @@ export async function createListingAction(
       error:
         "Devi prima confermare il tuo indirizzo e-mail: controlla la tua casella di posta.",
     };
+
+  const allowedToPublish = await checkRateLimit({
+    key: `publish:${userId}`,
+    limit: 10,
+    windowMs: 60 * 60 * 1000, // 10 annunci/ora per utente
+  });
+  if (!allowedToPublish)
+    return { error: "Hai pubblicato troppi annunci di recente. Riprova tra qualche minuto." };
 
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
@@ -293,6 +325,14 @@ export async function startConversationAction(
         "Devi prima confermare il tuo indirizzo e-mail per contattare i venditori.",
     };
 
+  const allowedToMessage = await checkRateLimit({
+    key: `message:${userId}`,
+    limit: 20,
+    windowMs: 10 * 60 * 1000, // 20 messaggi ogni 10 minuti per utente
+  });
+  if (!allowedToMessage)
+    return { error: "Hai inviato troppi messaggi di recente. Riprova tra qualche minuto." };
+
   const body = String(formData.get("body") ?? "").trim();
   if (body.length < 2) return { error: "Scrivi un messaggio." };
   if (body.length > MAX_MESSAGE_LENGTH)
@@ -334,6 +374,14 @@ export async function replyMessageAction(
 ): Promise<ActionState> {
   const userId = await getSessionUserId();
   if (!userId) redirect("/accedi");
+
+  const allowedToMessage = await checkRateLimit({
+    key: `message:${userId}`,
+    limit: 20,
+    windowMs: 10 * 60 * 1000, // 20 messaggi ogni 10 minuti per utente
+  });
+  if (!allowedToMessage)
+    return { error: "Hai inviato troppi messaggi di recente. Riprova tra qualche minuto." };
 
   const conversationId = String(formData.get("conversationId") ?? "");
   const body = String(formData.get("body") ?? "").trim();

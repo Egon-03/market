@@ -1203,6 +1203,19 @@ const listings: SeedListing[] = [
 ];
 
 async function main() {
+  // Protezione: questo script crea account demo con password nota
+  // ("password123") pubblicata anche nel README. Va eseguito SOLO su un
+  // database di sviluppo/test, mai su quello di produzione: chiunque
+  // potrebbe altrimenti accedere con quelle credenziali sul sito vero.
+  if (process.env.ALLOW_SEED !== "true") {
+    console.error(
+      "[seed] Bloccato per sicurezza: questo script crea utenti demo con password nota (password123).\n" +
+        "        Esegui SOLO su un database di sviluppo/test, mai in produzione.\n" +
+        "        Se sei sicuro di voler procedere: ALLOW_SEED=true npm run db:seed"
+    );
+    process.exit(1);
+  }
+
   const passwordHash = await bcrypt.hash("password123", 10);
 
   const demo = await db.user.upsert({

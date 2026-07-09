@@ -40,11 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# database SQLite locale
-prisma/*.db
-prisma/*.db-journal
-
-# immagini caricate dagli utenti
+# immagini caricate dagli utenti (in locale, senza storage cloud configurato)
 /public/uploads/
 
 # mantieni l'esempio di configurazione

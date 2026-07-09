@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -82,4 +82,16 @@ model Message {
   createdAt      DateTime     @default(now())
 
   @@index([conversationId])
+}
+
+/// Contatore per il rate limiting (tentativi di login, registrazioni,
+/// invio messaggi…): ogni riga rappresenta un "colpo" per una chiave
+/// (es. "login:1.2.3.4") usata per contare le richieste in una finestra
+/// temporale. Le righe scadute vengono ripulite in modo pigro a ogni check.
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
 }
